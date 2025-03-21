@@ -46,25 +46,9 @@
             <div class="col-sm-6">
                 <select name="brand_id" id="brand-id" class="form-control custom-select-black">
                     <option value="">Please Select</option>
-                    <option value="8">ASUS</option>
-                    <option value="7">Acer</option>
-                    <option value="16">Adidas</option>
-                    <option value="1">Apple</option>
-                    <option value="15">Beats</option>
-                    <option value="20">Bose</option>
-                    <option value="6">Dell</option>
-                    <option value="5">HP</option>
-                    <option value="3">Huawei</option>
-                    <option value="14">LG</option>
-                    <option value="10">Lenovo</option>
-                    <option value="12">MSI</option>
-                    <option value="9">Microsoft</option>
-                    <option value="17">NIKE</option>
-                    <option value="19">NOKIA</option>
-                    <option value="4">OnePlus</option>
-                    <option value="11">Reebok</option>
-                    <option value="18">SONY</option>
-                    <option value="2">Samsung</option>
+                        @foreach($brands as $brand)
+                            <option value="{{ $brand->id }}">{{ $brand->slug }}</option>
+                        @endforeach
                 </select>
                 <span class="help-block text-red">The name field is required</span>
             </div>
@@ -79,25 +63,9 @@
             <div class="col-sm-6">
                 <select name="categories" id="categories-id" class="form-control custom-select-black">
                     <option value="">Please Select</option>
-                    <option value="8">ASUS</option>
-                    <option value="7">Acer</option>
-                    <option value="16">Adidas</option>
-                    <option value="1">Apple</option>
-                    <option value="15">Beats</option>
-                    <option value="20">Bose</option>
-                    <option value="6">Dell</option>
-                    <option value="5">HP</option>
-                    <option value="3">Huawei</option>
-                    <option value="14">LG</option>
-                    <option value="10">Lenovo</option>
-                    <option value="12">MSI</option>
-                    <option value="9">Microsoft</option>
-                    <option value="17">NIKE</option>
-                    <option value="19">NOKIA</option>
-                    <option value="4">OnePlus</option>
-                    <option value="11">Reebok</option>
-                    <option value="18">SONY</option>
-                    <option value="2">Samsung</option>
+                        @foreach($categories as $category)
+                            <option value="{{ $category->id }}">{{ $category->slug }}</option>
+                        @endforeach
                 </select>
                 <span class="help-block text-red">The name field is required</span>
             </div>

@@ -40,7 +40,7 @@
                     </div>
                 </div>
 
-                <table class="table table-striped table-hover dataTable">
+                <table id="myDataTable"class="table table-striped table-hover dataTable">
                     <thead>{{ $thead }}</thead>
 
                     <tbody>{{ $tbody }}</tbody>
@@ -52,47 +52,11 @@
             </div>
         </div>
         <div class="row dt-layout-row">
-            <div class="dt-layout-cell dt-layout-start col-sm-6">
-                <label class="dt-info" aria-live="polite" id="DataTables_Table_0_info" role="status">
-                    1 - 25 of 140 results entries
-                </label>
+            <div>
+                {{$ttotal}}
             </div>
-            <div class="dt-layout-cell dt-layout-end col-sm-6">
-                <div class="dt-paging">
-                    <nav aria-label="pagination">
-                        <ul class="pagination">
-                            <li class="dt-paging-button page-item disabled">
-                                <a class="page-link first" data-dt-idx="first">«</a>
-                            </li>
-                            <li class="dt-paging-button page-item disabled">
-                                <a class="page-link previous" data-dt-idx="previous" tabindex="-1">‹</a></li>
-                            <li class="dt-paging-button page-item active">
-                                <a href="#" class="page-link" data-dt-idx="0">1</a>
-                            </li>
-                            <li class="dt-paging-button page-item">
-                                <a href="#" class="page-link" data-dt-idx="0">2</a>
-                            </li>
-                            <li class="dt-paging-button page-item">
-                                <a href="#" class="page-link" data-dt-idx="0">3</a>
-                            </li>
-                            <li class="dt-paging-button page-item disabled">
-                                <a class="page-link ellipsis" data-dt-idx="ellipsis" tabindex="-1">…</a>
-                            </li>
-                            <li class="dt-paging-button page-item">
-                                <a href="#" class="page-link" data-dt-idx="0">5</a>
-                            </li>
-                            <li class="dt-paging-button page-item">
-                                <a href="#" class="page-link" data-dt-idx="0">6</a>
-                            </li>
-                            <li class="dt-paging-button page-item">
-                                <a href="#" class="page-link next" data-dt-idx="next">›</a>
-                            </li>
-                            <li class="dt-paging-button page-item">
-                                <a href="#" class="page-link last" data-dt-idx="last">»</a>
-                            </li>
-                        </ul>
-                    </nav>
-                </div>
+            <div>
+                {{$tchange}}
             </div>
         </div>
     </div>

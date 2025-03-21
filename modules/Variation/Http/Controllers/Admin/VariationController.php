@@ -8,6 +8,8 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Modules\Admin\Traits\HasCrudActions;
+use App\Models\Variation;
+
 
 class VariationController
 {
@@ -47,7 +49,13 @@ class VariationController
 
     public function show($id)
     {
+        $variation = Variation::with('values')->find($id);
 
+        if (!$variation) {
+            return response()->json(['message' => 'Không tìm thấy biến thể'], 404);
+        }
+
+        return response()->json($variation);
     }
 
 
