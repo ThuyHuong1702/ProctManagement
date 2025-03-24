@@ -38,7 +38,7 @@ CREATE TABLE categories (
 
 CREATE TABLE `variations` (
 	`id` INT PRIMARY KEY,
-	`uid` VARCHAR(191) NOT NULL,
+	`name` VARCHAR(191) NOT NULL,
 	`type` VARCHAR(191),
 	`is_global` TINYINT(1),
 	`position` INT,
@@ -52,7 +52,7 @@ CREATE TABLE `variations` (
 CREATE TABLE `variation_values` (
 	`id` INT PRIMARY KEY,
 	`variation_id` INT NOT NULL,
-	`uid` VARCHAR(191),
+	`lable` VARCHAR(191) NOT NULL,
 	`value` VARCHAR(191),
 	`position` INT,
 	`createc_at` TIMESTAMP,
@@ -65,8 +65,7 @@ CREATE TABLE `variation_values` (
 CREATE TABLE `products` (
 	`id` INT PRIMARY KEY,
 	`brand_id` INT NOT NULL,
-	`tax_class_id` INT,
-	`slug` VARCHAR(191),
+	`description` text,
 	`price` DECIMAL(18,4),
 	`special_price` DECIMAL(18,4),
 	`special_price_type` VARCHAR(191),
@@ -79,11 +78,11 @@ CREATE TABLE `products` (
 	`in_stock` TINYINT(1),
 	`viewed` INT,
 	`is_active` TINYINT(1),
+	`sm_description` text,
 	`new_from` DATETIME,
 	`new_to` DATETIME,
 	`position` INT,
 	`deleted_at` TIMESTAMP,
-	`is_virtual` TINYINT(1),
 	`createc_at` TIMESTAMP,
    `updated_at` TIMESTAMP,
     CONSTRAINT FK_brand_id FOREIGN KEY (`brand_id`) REFERENCES brands (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
@@ -223,7 +222,7 @@ SELECT * FROM products
 INSERT INTO products (id, brand_id, name, tax_class_id, slug, price, special_price, special_price_type, special_price_start, special_price_end, sku, manage_stock, qty, in_stock, viewed, is_active, new_from, new_to, deleted_at, created_at, updated_at)
 VALUES
 -- Trường hợp 1: Giảm giá cố định (fixed) và đang trong thời gian giảm
-(1, 1, 'Product 1', NULL, 'product-1', 200.00, 20.00, 'fixed', '2025-03-17', '2025-03-23', 'P1001', 1, 50, 1, 0, 1, NULL, NULL, NULL, NOW(), NOW()),
+(6, 1, 'Product 1', NULL, 'product-1', 200.00, 20.00, 'fixed', '2025-03-17', '2025-03-23', 'P1001', 1, 50, 1, 0, 1, NULL, NULL, NULL, NOW(), NOW()),
 
 -- Trường hợp 2: Giảm giá phần trăm (percent) và đang trong thời gian giảm
 (2, 1, 'Product 2', NULL, 'product-2', 300.00, 10, 'percent', '2025-03-15', '2025-03-25', 'P1002', 1, 30, 1, 0, 1, NULL, NULL, NULL, NOW(), NOW()),
@@ -248,22 +247,152 @@ VALUES
 (6, 2, 'clothing', 6, 1, 1, NOW(), NOW()),
 (7, 2, 'shoes', 7, 1, 1, NOW(), NOW());
 
-
+SELECT 
 INSERT INTO product_categories (category_id, product_id) 
 VALUES
-(4, 1), -- Product 1 thuộc danh mục laptops
 (5, 2), -- Product 2 thuộc danh mục smartphones
 (6, 3), -- Product 3 thuộc danh mục clothing
 (7, 4), -- Product 4 thuộc danh mục shoes
 (4, 5); -- Product 5 thuộc danh mục laptops
 
 
-INSERT INTO variations (uid, type, is_global, position, created_at, updated_at)
-VALUES
-('var-1', 'text', 1, 1, NOW(), NOW()),
-('var-2', 'color', 1, 2, NOW(), NOW()),
-('var-3', 'image', 1, 3, NOW(), NOW()),
-('var-4', 'size', 1, 4, NOW(), NOW()),
-('var-5', 'material', 1, 5, NOW(), NOW());
+-- Chèn dữ liệu vào bảng variations
+INSERT INTO `variations` (`name`, `type`, `is_global`, `position`) VALUES
+('Màu sắc', 'Color', 1, 1),
+('Kích thước', 'Text', 1, 2),
+('Hình ảnh', 'Image', 0, 3);
 
+-- Chèn dữ liệu vào bảng variation_values
+INSERT INTO `variation_values` (`variation_id`, `label`, `value`, `position`) VALUES
+-- Dữ liệu cho "Màu sắc"
+(1, 'Red', '#d01c1f', 1),
+(1, 'Green', '#3aa845', 2),
+(1, 'Blue', '#0d46a0', 3),
+(1, 'Yellow', '#f6d100', 4),
+
+-- Dữ liệu cho "Kích thước"
+(2, 'Small', 'S', 1),
+(2, 'Medium', 'M', 2),
+(2, 'Large', 'L', 3);
+
+-- Dữ liệu cho "Hình ảnh"
+(3, 'Front View', 'https://example.com/front.jpg', 1),
+(3, 'Back View', 'https://example.com/back.jpg', 2);
+
+SELECT * FROM variations;
+
+SELECT * FROM product_variants
+
+SELECT * FROM variation_values
+
+DELETE FROM products WHERE id=1
+SELECT * FROM product_categories
+
+SELECT * FROM products
+
+//////////////////////////////
+composer require tightenco/Ziggy
+npm install ziggy-js
+npm list ziggy-js 
+thêm vào app.js
+import route from 'ziggy-js';
+window.route = route;
+
+thêm vào layout.blade.php trước script
+@route
+
+ public function store(Request $request)
+    {
+        // Kiểm tra dữ liệu đầu vào
+        $request->validate([
+            'name' => 'required|string|max:191',
+            'brand_id' => 'required|exists:brands,id',
+            'description' => 'nullable|string',
+            'sort_description' => 'nullable|string',
+            'price' => 'nullable|numeric|min:0',
+            'special_price' => 'nullable|numeric|min:0',
+            'special_price_type' => 'nullable|string|in:fixed,percent',
+            'special_price_start' => 'nullable|date',
+            'special_price_end' => 'nullable|date',
+            'selling_price' => 'nullable|numeric|min:0',
+            'sku' => 'required|string|unique:products,sku|max:191',
+            'manage_stock' => 'boolean',
+            'qty' => 'integer|min:0',
+            'in_stock' => 'boolean',
+            'viewed' => 'integer|min:0',
+            'is_active' => 'boolean',
+            'new_from' => 'nullable|date',
+            'new_to' => 'nullable|date',
+            'variants' => 'nullable|array',
+            'variants.*.name' => 'required_with:variants|string|max:191',
+            'variants.*.price' => 'required_with:variants|numeric|min:0',
+            'variants.*.special_price' => 'nullable|numeric|min:0',
+            'variants.*.special_price_type' => 'nullable|string|in:fixed,percent',
+            'variants.*.special_price_start' => 'nullable|date',
+            'variants.*.special_price_end' => 'nullable|date',
+            'variants.*.sku' => 'required_with:variants|string|unique:product_variants,sku|max:191',
+            'variants.*.is_default' => 'boolean'
+        ]);
+
+        $variants = $request->input('variants', []);
+        $defaultVariant = collect($variants)->firstWhere('is_default', true);
+
+        if ($variants && !$defaultVariant) {
+            return redirect()->back()->withErrors(['variants' => 'Phải có ít nhất một biến thể mặc định.']);
+        }
+
+        $productData = $request->except(['price', 'special_price', 'special_price_type', 'special_price_start', 'special_price_end', 'sku']);
+
+        if ($defaultVariant) {
+            $productData['price'] = $defaultVariant['price'];
+            $productData['special_price'] = $defaultVariant['special_price'] ?? null;
+            $productData['special_price_type'] = $defaultVariant['special_price_type'] ?? null;
+            $productData['special_price_start'] = $defaultVariant['special_price_start'] ?? null;
+            $productData['special_price_end'] = $defaultVariant['special_price_end'] ?? null;
+            $productData['sku'] = $defaultVariant['sku'] ?? $request->sku;
+        } else {
+            $productData['price'] = $request->price;
+            $productData['special_price'] = $request->special_price;
+            $productData['special_price_type'] = $request->special_price_type;
+            $productData['special_price_start'] = $request->special_price_start;
+            $productData['special_price_end'] = $request->special_price_end;
+            $productData['sku'] = $request->sku;
+        }
+
+        $product = Product::create($productData);
+
+        if (!empty($variants)) {
+            foreach ($variants as $variant) {
+                ProductVariant::create([
+                    'product_id' => $product->id,
+                    'name' => $variant['name'],
+                    'price' => $variant['price'],
+                    'special_price' => $variant['special_price'] ?? null,
+                    'special_price_type' => $variant['special_price_type'] ?? null,
+                    'special_price_start' => $variant['special_price_start'] ?? null,
+                    'special_price_end' => $variant['special_price_end'] ?? null,
+                    'sku' => $variant['sku'],
+                    'is_default' => $variant['is_default'] ?? false,
+                    'manage_stock' => $request->manage_stock ?? 0,
+                    'qty' => $request->qty ?? 0,
+                    'in_stock' => $request->in_stock ?? 1,
+                    'is_active' => $request->is_active ?? 1,
+                    'position' => 0
+                ]);
+            }
+        }
+
+        // Gán danh mục nếu có
+    if ($request->has('category_id')) {
+        $product->categories()->attach($request->category_id);
+    }
+
+    // Kiểm tra xem người dùng có muốn quay lại trang danh sách không
+    if ($request->input('redirect_after_save') == "1") {
+        return redirect()->route('admin.products.index')->with('success', 'Sản phẩm đã được thêm thành công!');
+    }
+
+    // Nếu không, quay lại trang tạo sản phẩm với thông báo thành công
+    return redirect()->back()->with('success', 'Sản phẩm đã được lưu!');
+    }
 
