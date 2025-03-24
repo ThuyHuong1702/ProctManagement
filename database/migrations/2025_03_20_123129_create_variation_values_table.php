@@ -11,7 +11,7 @@ return new class extends Migration
         Schema::create('variation_values', function (Blueprint $table) {
             $table->id();
             $table->foreignId('variation_id')->constrained('variations')->onDelete('cascade');
-            $table->string('uid', 191)->nullable();
+            $table->string('label', 191)->nullable();
             $table->string('value', 191);
             $table->integer('position')->nullable();
             $table->timestamps();

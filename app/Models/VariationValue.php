@@ -9,14 +9,14 @@ class VariationValue extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['variation_id', 'uid', 'value', 'position'];
+    protected $fillable = ['variation_id', 'label', 'value', 'position'];
 
     /**
      * Một giá trị biến thể thuộc về một biến thể.
      */
     public function variation()
     {
-        return $this->belongsTo(Variation::class, 'variation_id');
+        return $this->belongsTo(Variation::class, 'variation_id', 'id');
     }
 
 }

@@ -9,7 +9,8 @@
 
 @section('content')
     <div id="app">
-        <form class="product-form">
+        <form class="product-form" method="POST" action="{{ route('admin.products.store') }}">
+            @csrf
             <div class="row">
                 <div class="product-form-left-column col-lg-8 col-md-12">
                     @include('product::admin.products.layouts.left_column')
@@ -21,10 +22,10 @@
             </div>
 
             <div class="page-form-footer">
-                <button type="button" class="btn btn-default">
+                <button type="submit" class="btn btn-default save-btn">
                     Save
                 </button>
-                <button type="button" class="btn btn-primary">
+                <button type="submit" class="btn btn-primary save-exit-btn">
                     Save &amp; Exit
                 </button>
             </div>
@@ -43,4 +44,18 @@
         'modules/Media/Resources/assets/admin/sass/main.scss',
         'modules/Media/Resources/assets/admin/js/main.js',
     ])
+@endpush
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelector('.save-btn').addEventListener('click', function () {
+            document.querySelector('#redirect_after_save').value = "0";
+        });
+
+        document.querySelector('.save-exit-btn').addEventListener('click', function () {
+            document.querySelector('#redirect_after_save').value = "1";
+        });
+    });
+</script>
 @endpush

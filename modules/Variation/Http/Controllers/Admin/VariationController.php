@@ -13,7 +13,6 @@ use App\Models\Variation;
 
 class VariationController
 {
-    use HasCrudActions;
 
     /**
      * Model for the resource.
@@ -43,21 +42,25 @@ class VariationController
      */
     public function index(Request $request)
     {
-        return view("{$this->viewPath}.index");
+        $globalVariations = Variation::all();
+        //return view('admin.variations.index', compact('globalVariations'));
+        return view("{$this->viewPath}.index", compact('globalVariations'));
     }
 
 
     public function show($id)
     {
+        // Truy vấn biến thể theo ID, lấy kèm danh sách các giá trị từ bảng variation_values
         $variation = Variation::with('values')->find($id);
 
+        // Nếu không tìm thấy, trả về lỗi 404
         if (!$variation) {
             return response()->json(['message' => 'Không tìm thấy biến thể'], 404);
         }
 
+        // Trả về dữ liệu biến thể dưới dạng JSON
         return response()->json($variation);
     }
-
 
     /**
      * Show the form for editing the specified resource.

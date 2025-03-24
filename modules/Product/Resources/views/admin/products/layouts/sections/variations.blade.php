@@ -126,7 +126,7 @@
                                                         {{ trans('product::products.form.variations.variation_types.please_select') }}
                                                     </option>
 
-                                                    @foreach ($globalVariations as $variationItem)
+                                                    @foreach ($variations as $variationItem)
                                                         <option value="{{ $variationItem->type }}">
                                                             {{ $variationItem->type }}
                                                         </option>
@@ -281,8 +281,8 @@
                             {{ trans('product::products.form.variations.select_template') }}
                         </option>
 
-                        @foreach ($globalVariations as $globalVariation)
-                            <option value="{{ $globalVariation->id }}">{{ $globalVariation->uid }}</option>
+                        @foreach ($variations as $globalVariation)
+                            <option value="{{ $globalVariation->id }}">{{ $globalVariation->name }}</option>
                         @endforeach
                     </select>
 

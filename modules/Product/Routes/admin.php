@@ -16,3 +16,5 @@ Route::get('products/{id}', [ProductController::class, 'update'])->name('admin.p
 Route::delete('products/{ids}', [ProductController::class, 'destroy'])->name('admin.products.destroy');
 
 Route::get('products/index/table', [ProductController::class, 'table'])->name('admin.products.table');
+
+Route::post('/products/delete', [ProductController::class, 'delete'])->name('admin.products.delete');

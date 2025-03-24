@@ -2,8 +2,8 @@
 
 namespace Modules\Product\Http\Controllers\Admin;
 
+use Illuminate\View\View;
 use Illuminate\Contracts\View\Factory;
-use Illuminate\Contracts\View\View;
 use Illuminate\Foundation\Application;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -37,6 +37,18 @@ class ProductController
      * @var string
      */
     protected string $viewPath = 'product::admin.products';
+
+    /**
+     * Lấy giá trị Global Variation ID từ request hoặc mặc định.
+     *
+     * @param Request $request
+     * @return int|null
+     */
+    protected function getGlobalVariationId(Request $request)
+    {
+        return $request->query('globalVariationId') ?? null;
+    }
+
 
     /**
      * Store a newly created resource in storage.
@@ -106,21 +118,51 @@ class ProductController
      */
     public function create()
     {
-        $brands = Brand::where('is_active', 1)->get(); // Lấy tất cả thương hiệu đang hoạt động
-        $categories = Category::where('is_active', 1)->get(); // Lấy tất cả danh mục đang hoạt động
-        $globalVariations = Variation::all(); // Lấy tất cả globalVariations từ database
-
-        return view("{$this->viewPath}.create", compact('brands', 'categories', 'globalVariations'));
+        return view("{$this->viewPath}.create");
     }
+
 
     /**
      * Store a newly created resource in storage.
      *
      * @return Response|JsonResponse
      */
-    public function store()
+    public function store(Request $request)
     {
+        // Kiểm tra dữ liệu đầu vào
+        $request->validate([
+            'name' => 'required|string|max:191',
+            'brand_id' => 'required|exists:brands,id',
+            'description' => 'nullable|string',
+            'sort_description' => 'nullable|string',
+            'price' => 'required|numeric|min:0',
+            'special_price' => 'nullable|numeric|min:0',
+            'special_price_type' => 'nullable|string|in:fixed,percent',
+            'special_price_start' => 'nullable|date',
+            'special_price_end' => 'nullable|date',
+            'selling_price' => 'nullable|numeric|min:0',
+            'sku' => 'required|string|unique:products,sku|max:191',
+            'manage_stock' => 'boolean',
+            'qty' => 'integer|min:0',
+            'in_stock' => 'boolean',
+            'viewed' => 'integer|min:0',
+            'is_active' => 'boolean',
+            'new_from' => 'nullable|date',
+            'new_to' => 'nullable|date',
+        ]);
 
+        // Tạo sản phẩm mới
+        $product = Product::create($request->all());
+
+        $product->categories()->attach($request->category_id);
+
+        // Kiểm tra xem người dùng có muốn quay lại trang danh sách không
+        if ($request->input('redirect_after_save') == "1") {
+            return redirect()->route('admin.products.index')->with('success', 'Sản phẩm đã được thêm thành công!');
+        }
+
+        // Nếu không, quay lại trang tạo sản phẩm với thông báo thành công
+        return redirect()->back()->with('success', 'Sản phẩm đã được lưu!');
     }
 
 
@@ -146,6 +188,20 @@ class ProductController
     {
 
     }
+
+    public function delete(Request $request)
+    {
+        $productIds = $request->input('product_ids');
+
+        if (empty($productIds)) {
+            return response()->json(['success' => false, 'message' => 'Không có sản phẩm nào được chọn!']);
+        }
+
+        Product::whereIn('id', $productIds)->delete();
+
+        return response()->json(['success' => true, 'message' => 'Sản phẩm đã bị xóa thành công!']);
+    }
+
 
     /**
      * Get request object

@@ -1,26 +1,27 @@
 import Coloris from "@melloware/coloris";
+import route from 'ziggy-js';
 
 export default {
     data() {
         return {
-            globalVariationId: "",
-            addingGlobalVariation: false,
-            variations: [],
+            globalVariationId: "",//globalVariationId: ID của biến thể toàn cục.
+            addingGlobalVariation: false,//Cờ kiểm tra xem có đang thêm biến thể toàn cục không.
+            variations: [],//variations: Danh sách biến thể của sản phẩm.
         };
     },
 
     computed: {
         isAddGlobalVariationDisabled() {
-            return this.globalVariationId === "" || this.addingGlobalVariation;
+            return this.globalVariationId === "" || this.addingGlobalVariation;//Kiểm tra xem nút thêm biến thể toàn cục có bị vô hiệu hóa không.
         },
 
         isCollapsedVariationsAccordion() {
             return this.form.variations.every(
-                ({ is_open }) => is_open === false
+                ({ is_open }) => is_open === false//Kiểm tra xem tất cả các biến thể có đang bị đóng hay không.
             );
         },
     },
-
+//Theo dõi sự thay đổi của form.variations, nếu danh sách rỗng thì tự động thêm một biến thể mới.
     watch: {
         "form.variations": {
             immediate: true,
@@ -33,17 +34,20 @@ export default {
     },
 
     mounted() {
-        this.initColorPicker();
-        this.hideColorPicker();
+        this.initColorPicker();//Khởi tạo bộ chọn màu.
+        this.hideColorPicker();//Ẩn bộ chọn màu khi người dùng click ra ngoài
     },
 
     methods: {
+        //Đặt trạng thái mặc định cho variations
+        //Đặt thuộc tính is_open thành false cho tất cả biến thể.
         prepareVariations(variations) {
             variations.forEach((variation) => {
                 this.$set(variation, "is_open", false);
             });
         },
 
+        //Tạo UID mới cho các variations và values
         regenerateVariationsUid() {
             this.form.variations.forEach((variation) => {
                 this.$set(variation, "uid", this.uid());
@@ -54,15 +58,18 @@ export default {
             });
         },
 
+        //Sắp xếp lại variations
         reorderVariations() {
             this.generateVariants();
             this.notifyVariantsReordered();
         },
 
+        //Sắp xếp lại giá trị trong variations
         reorderVariationValues() {
             this.generateVariants(true);
         },
 
+        // Thêm một biến thể mới vào danh sách form.variations.
         addVariation({ preventFocus }) {
             const uid = this.uid();
 
@@ -89,12 +96,14 @@ export default {
             }
         },
 
+        //Xóa biến thể khỏi danh sách.
         deleteVariation(index, uid) {
             this.form.variations.splice(index, 1);
             this.clearErrors({ name: "variations", uid });
             this.generateVariants();
         },
 
+        //Cập nhật loại biến thể (text, color, image)
         changeVariationType(value, index, uid) {
             const variation = this.form.variations[index];
 
@@ -162,6 +171,7 @@ export default {
             });
         },
 
+        //Thêm một hàng giá trị mới vào biến thể
         addVariationRow(index, variationUid) {
             const valueUid = this.uid();
 
@@ -182,6 +192,8 @@ export default {
             });
         },
 
+        //Thêm hàng mới nếu cần và chuyển focus đến hàng tiếp theo
+        //Chỉ chạy nếu ô nhập hiện tại không trống
         addVariationRowOnPressEnter(event, variationIndex, valueIndex) {
             const variation = this.form.variations[variationIndex];
             const values = variation.values;
@@ -203,6 +215,7 @@ export default {
             }
         },
 
+        //Xóa một giá trị khỏi biến thể
         deleteVariationRow(variationIndex, variationUid, valueIndex, valueUid) {
             const variation = this.form.variations[variationIndex];
 
@@ -221,6 +234,17 @@ export default {
             this.generateVariants();
         },
 
+        //Cập nhật màu sắc cho từng giá trị của biến thể
+        /*
+            Với mỗi giá trị (values[valueIndex]):
+
+            Lấy color của giá trị đó.
+
+            Cập nhật thuộc tính CSS color của phần tử tương ứng (elements[valueIndex].style.color = color).
+
+            Nếu color không có giá trị (null hoặc undefined), sẽ gán "" để xóa màu.
+
+        */
         updateColorThumbnails() {
             this.form.variations.forEach(({ uid, type, values }) => {
                 if (type !== "color") return;
@@ -235,17 +259,19 @@ export default {
             });
         },
 
+        //khởi tạo bộ chọn màu (color picker) bằng thư viện Coloris
+
         initColorPicker() {
-            Coloris.init();
+            Coloris.init();//khởi tạo thư viện Coloris
 
             Coloris({
-                el: ".color-picker",
-                alpha: false,
-                rtl: Ecommerce.rtl,
-                theme: "large",
-                wrap: true,
-                format: "hex",
-                selectInput: true,
+                el: ".color-picker",//Áp dụng Coloris cho các phần tử có class .color-picker.
+                alpha: false,//Không hỗ trợ độ trong suốt (alpha channel).
+                rtl: Ecommerce.rtl,//Kích hoạt chế độ Right-To-Left (RTL) nếu Ecommerce.rtl là true (hữu ích cho ngôn ngữ như tiếng Ả Rập).
+                theme: "large",//Sử dụng giao diện Coloris kích thước lớn.
+                wrap: true,//Coloris bao bọc (wrap) đầu vào, nghĩa là giao diện color picker sẽ nằm ngay trong ô nhập.
+                format: "hex",//Màu sắc sẽ hiển thị ở định dạng mã màu HEX (#RRGGBB).
+                selectInput: true,//Cho phép người dùng nhập mã màu trực tiếp vào ô nhập.
                 swatches: [
                     "#D01C1F",
                     "#3AA845",
@@ -263,9 +289,18 @@ export default {
                     "#A1C3DA",
                     "#C8BFC2",
                     "#A9A270",
-                ],
+                ],//Cung cấp danh sách các màu sắc phổ biến để người dùng chọn nhanh.
             });
         },
+
+        //được sử dụng để ẩn bảng chọn màu (color picker) của Coloris khi người dùng nhấn vào một màu trong bảng màu (swatches).
+        /*
+            Lắng nghe sự kiện "click" trên toàn bộ tài liệu (document).
+
+            Chỉ kích hoạt khi người dùng click vào nút trong #clr-swatches, tức là các nút màu trong bảng màu nhanh của Coloris.
+            Lấy phần tử cha (#clr-picker) của nút vừa click.
+            Xóa class "clr-open" khỏi #clr-picker, làm cho bảng chọn màu bị đóng.
+        */
 
         hideColorPicker() {
             $(document).on("click", "#clr-swatches button", (e) => {
@@ -277,12 +312,11 @@ export default {
 
         addGlobalVariation() {
             if (this.globalVariationId === "") return;
-
             this.addingGlobalVariation = true;
 
             $.ajax({
                 type: "GET",
-                url: route("admin.variations.show", this.globalVariationId),
+                url: route("admin.variations.show", { id: this.globalVariationId }),
                 dataType: "json",
                 success: (variation) => {
                     variation.uid = this.uid();

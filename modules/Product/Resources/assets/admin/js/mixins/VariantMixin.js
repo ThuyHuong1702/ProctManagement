@@ -1,75 +1,80 @@
 export default {
     data() {
         return {
-            defaultVariantUid: "",
-            variantPosition: 0,
-            variantsLength: 0,
+            defaultVariantUid: "",//UID của biến thể mặc định.
+            variantPosition: 0, //Chỉ số của biến thể, giúp xác định thứ tự sắp xếp.
+            variantsLength: 0,//Số lượng biến thể hiện tại.
         };
     },
 
     computed: {
         hasAnyVariant() {
-            return this.form.variants.length !== 0;
+            return this.form.variants.length !== 0;//Kiểm tra xem có biến thể nào không.Nếu không có biến thể, có thể ẩn bảng quản lý biến thể hoặc hiển thị thông báo "Chưa có biến thể nào".
         },
 
         isCollapsedVariantsAccordion() {
-            return this.form.variants.every(({ is_open }) => is_open === false);
+            return this.form.variants.every(({ is_open }) => is_open === false);//Kiểm tra xem tất cả biến thể có đang bị đóng (is_open === false) không. Nếu tất cả bị đóng hoăcj mởmở → Nút sẽ là "Collapse All".
         },
     },
 
     mounted() {
         if (this.hasAnyVariant) {
-            this.setVariantsName();
+            this.setVariantsName();//Khi component được mounted, nếu có biến thể, phương thức setVariantsName() sẽ cập nhật tên của chúng.
         }
     },
 
     methods: {
         prepareVariants(variants) {
             variants.forEach((variant) => {
-                this.$set(variant, "position", this.variantPosition++);
-                this.$set(variant, "is_open", false);
-                this.$set(variant, "is_selected", false);
+                this.$set(variant, "position", this.variantPosition++);//Xác định thứ tự biến thể, giúp sắp xếp dễ dàng.
+                this.$set(variant, "is_open", false);//Kiểm soát mở/đóng giao diện biến thể, tránh UI lộn xộn.
+                this.$set(variant, "is_selected", false);//Hỗ trợ chọn nhiều biến thể cùng lúc để chỉnh sửa hoặc xóa hàng loạt.
             });
         },
 
+        //Thay đổi biến thể mặc định
         changeDefaultVariant(uid) {
-            const variants = this.form.variants;
-            const index = variants.findIndex((variant) => variant.uid === uid);
+            const variants = this.form.variants;//Lấy danh sách tất cả các biến thể từ this.form.variants.
+            const index = variants.findIndex((variant) => variant.uid === uid);//Tìm vị trí (index) của biến thể trong danh sách có UID trùng với uid được truyền vào.
 
-            if (variants[index].is_active === true) {
-                this.resetDefaultVariant();
-                this.defaultVariantUid = variants[index].uid;
-                this.$set(variants[index], "is_default", true);
-
+            if (variants[index].is_active === true) {//Kiểm tra xem biến thể đó có đang hoạt động (is_active === true) hay không.Nếu biến thể không hoạt động, nó không thể được đặt làm mặc định.
+                this.resetDefaultVariant();//Xóa biến thể mặc định hiện tại trước khi đặt biến thể mới làm mặc định. resetDefaultVariant() sẽ tìm biến thể đang có is_default === true và đặt lại is_default = false.
+                this.defaultVariantUid = variants[index].uid;//Cập nhật defaultVariantUid để lưu UID của biến thể mới được chọn làm mặc định.
+                this.$set(variants[index], "is_default", true);//Gán thuộc tính is_default = true cho biến thể vừa được chọn. Sử dụng this.$set() để đảm bảo Vue nhận diện sự thay đổi và cập nhật giao diện.
                 return;
             }
 
             this.defaultVariantUid = this.defaultVariantUid;
         },
 
+        //Đặt biến thể mặc định ban đầu
         setDefaultVariant() {
-            const variants = this.form.variants;
+            const variants = this.form.variants;//Lấy danh sách biến thể từ this.form.variants
             const index = variants.findIndex(
                 ({ uid }) => uid === this.defaultVariantUid
-            );
+            );//Tìm vị trí (index) của biến thể hiện tại đang là mặc định (nếu có). Nếu không tìm thấy, index sẽ bằng -1.
 
-            this.resetDefaultVariant();
+            this.resetDefaultVariant();//Gọi phương thức resetDefaultVariant(), đặt lại tất cả biến thể về is_default = false. Đảm bảo rằng chỉ có một biến thể mặc định duy nhất.
 
-            const variant = variants[index === -1 ? 0 : index];
+            const variant = variants[index === -1 ? 0 : index]; //Nếu index = -1 (không tìm thấy biến thể có defaultVariantUid), lấy biến thể đầu tiên (variants[0]) làm mặc định. Nếu tìm thấy, lấy biến thể tại index.
 
-            this.defaultVariantUid = variant.uid;
-            this.$set(variant, "is_default", true);
+            this.defaultVariantUid = variant.uid;//Cập nhật defaultVariantUid với UID của biến thể mới.
+            this.$set(variant, "is_default", true);//Gán is_default = true cho biến thể được chọn.
 
             if (index === -1) {
-                this.defaultVariantUid = variants[0].uid;
-                this.$set(variants[0], "is_active", true);
+                this.defaultVariantUid = variants[0].uid;//Nếu không có biến thể mặc định, thì biến thể đầu tiên sẽ được đặt làm mặc định.
+                this.$set(variants[0], "is_active", true);//Đồng thời đảm bảo rằng biến thể đầu tiên luôn "được kích hoạt" (is_active = true).
             }
         },
 
+        //Kiểm tra biến thể có đang hoạt động không.
         isActiveVariant(index) {
             return this.form.variants[index].is_active;
         },
 
+        //Kiểm tra xem biến thể có phải là biến thể mặc định không.
+        //Nếu đúng, hiển thị thông báo lỗi (nếu được bật) và không thay đổi trạng thái.
+        //Nếu không phải biến thể mặc định, tiếp tục.
         changeVariantStatus(variantUid) {
             if (this.defaultVariantUid === variantUid) {
                 // toaster(
@@ -88,8 +93,9 @@ export default {
             });
         },
 
+        //Xóa biến thể mặc định hiện tại bằng cách đặt is_default = false cho biến thể đang được chọn làm mặc định.
         resetDefaultVariant() {
-            this.form.variants.some((variant) => {
+            this.form.variants.some((variant) => {//Sử dụng .some() để duyệt qua từng biến thể trong this.form.variants. .some() dừng lại ngay khi tìm thấy biến thể đầu tiên thỏa điều kiện (tối ưu hơn .forEach()).
                 if (variant.is_default === true) {
                     this.$set(variant, "is_default", false);
 
@@ -98,23 +104,25 @@ export default {
             });
         },
 
+        //lọc ra các giá trị hợp lệ từ danh sách biến thể con (variations), chỉ giữ lại các giá trị có loại hợp lệ (type !== "") và có nhãn (label không rỗng).
         getFilteredVariations() {
-            return this.form.variations
-                .map(({ type, values }) =>
-                    values
+            return this.form.variations//this.form.variations là danh sách các nhóm biến thể con (ví dụ: Màu sắc, Kích thước, Chất liệu).
+                .map(({ type, values }) =>//Lấy danh sách giá trị hợp lệ của từng biến thể con
+                    values//Duyệt qua từng biến thể con, lấy danh sách values.
                         .map(({ uid, label }) => {
-                            if (type !== "" && Boolean(label)) {
+                            if (type !== "" && Boolean(label)) {//Bỏ qua biến thể con nếu type rỗng (type !== "").Chỉ giữ lại các giá trị có label hợp lệ (Boolean(label) lọc bỏ giá trị null, undefined, "")
                                 return { uid, label };
                             }
                         })
-                        .filter(Boolean)
+                        .filter(Boolean)//Dùng .filter(Boolean) để loại bỏ các phần tử undefined.
                 )
-                .filter((data) => data.length !== 0);
+                .filter((data) => data.length !== 0);//Nếu một biến thể con không có giá trị hợp lệ, nó sẽ trở thành []. -->Chỉ giữ lại những biến thể con có ít nhất một giá trị hợp lệ (data.length !== 0).
         },
 
+        //Tạo biến thể từ các biến thể con (ví dụ: Màu: Đỏ + Size: L → Đỏ / L).
         generateNewVariants(variations) {
-            return variations
-                .reduce((accumulator, currentValue) =>
+            return variations//variations là danh sách các nhóm biến thể con (ví dụ: Màu sắc, Kích thước).
+                .reduce((accumulator, currentValue) =>//duyệt qua từng nhóm biến thể con và kết hợp chúng lại.
                     accumulator.flatMap((x) =>
                         currentValue.map((y) => {
                             return {
@@ -124,14 +132,16 @@ export default {
                         })
                     )
                 )
+                //Chuẩn hóa UID biến thể
                 .map(({ uid, label }) => {
                     return {
-                        uids: uid.split(".").sort().join("."),
+                        uids: uid.split(".").sort().join("."),//uid.split(".") Tách UID thành mảng các phần tử. .sort().join(".") Sắp xếp lại UID theo thứ tự để đảm bảo sự đồng nhất.
                         name: label,
                     };
                 });
         },
 
+        //Cập nhật tên của từng biến thể (variants) dựa trên các giá trị của biến thể con (variations)
         setVariantsName() {
             this.generateNewVariants(this.getFilteredVariations()).forEach(
                 (variant, index) => {
@@ -140,17 +150,21 @@ export default {
             );
         },
 
+        //Kiểm tra xem biến thể có thay đổi không.
+        //Kiểm tra xem danh sách biến thể mới (newVariants) có giống với danh sách biến thể cũ (oldVariants) hay không.
+        //Dùng để xác định xem biến thể có thay đổi không, tránh cập nhật dư thừa nếu dữ liệu vẫn giữ nguyên.
         isEqualVariants(newVariants, oldVariants) {
             return (
-                newVariants.map(({ uids }) => uids).toString() ===
+                newVariants.map(({ uids }) => uids).toString() === //Duyệt qua từng biến thể trong newVariants và lấy thuộc tính uids. uids là một chuỗi đại diện cho các giá trị của biến thể, ví dụ: "M.red". --> Biến đổi mảng thành chuỗi, giúp so sánh trực tiếp hai danh sách.
                 oldVariants.map(({ uids }) => uids).toString()
-            );
+            );//Nếu hai chuỗi giống nhau, trả về true (biến thể không thay đổi). Nếu hai chuỗi khác nhau, trả về false (biến thể đã thay đổi).
         },
 
+        //Cập nhật danh sách biến thể dựa trên giá trị biến thể con.
         generateVariants(isReordered) {
-            this.$nextTick(() => {
-                this.initColorPicker();
-                this.updateColorThumbnails();
+            this.$nextTick(() => {//Đảm bảo cập nhật giao diện chỉ sau khi Vue hoàn tất cập nhật DOM.
+                this.initColorPicker();//Khởi tạo lại bộ chọn màu (initColorPicker()).
+                this.updateColorThumbnails();//Cập nhật màu sắc hiển thị (updateColorThumbnails()).
             });
 
             // Filter empty variation values
@@ -161,14 +175,14 @@ export default {
                 this.variantsLength = 0;
 
                 return;
-            }
+            }//Nếu không có biến thể con hợp lệ, danh sách biến thể sẽ bị xóa.
 
-            const newVariants = this.generateNewVariants(variations);
+            const newVariants = this.generateNewVariants(variations);//Tạo danh sách biến thể mới (newVariants) từ variations.
             const oldVariants = this.form.variants.map(({ uids }) => {
                 return {
-                    uids,
+                    uids,//Chỉ lấy uids vì UID là duy nhất cho mỗi biến thể (dùng để so sánh).
                 };
-            });
+            });//Lấy danh sách biến thể cũ (oldVariants).
 
             // Do not generate variants if empty value is reordered
             if (
@@ -176,11 +190,11 @@ export default {
                 this.isEqualVariants(newVariants, oldVariants)
             ) {
                 return;
-            }
+            }//Nếu isReordered === true (người dùng chỉ sắp xếp lại biến thể) nhưng danh sách không thay đổi (isEqualVariants() trả về true), thì thoát ngay. --> Tránh cập nhật không cần thiết khi danh sách biến thể không thay đổi.
 
             if (isReordered === true) {
                 this.notifyVariantsReordered();
-            }
+            }//Nếu biến thể được sắp xếp lại (isReordered === true), gửi thông báo (notifyVariantsReordered()).
 
             if (newVariants.length > this.variantsLength) {
                 // Variation added
@@ -193,18 +207,21 @@ export default {
                 this.reorderVariants(newVariants, oldVariants);
             }
 
-            this.variantsLength = newVariants.length;
-            this.setDefaultVariant();
+            this.variantsLength = newVariants.length;//Cập nhật số lượng biến thể (variantsLength).
+            this.setDefaultVariant();//đảm bảo luôn có một biến thể mặc định.
         },
 
+
+        //Thêm biến thể mới vào danh sách.
         addVariants(newVariants, oldVariants) {
-            this.notifyVariantsCreated(newVariants.length);
+            this.notifyVariantsCreated(newVariants.length);//Gửi thông báo cho người dùng về số lượng biến thể mới được thêm.
 
             // Add initial variation with single or multiple values when variants are empty
+            //Nếu chưa có biến thể (oldVariants.length === 0), thêm tất cả các biến thể mới vào danh sách this.form.variants.
             if (oldVariants.length === 0) {
                 newVariants.forEach((newVariant) => {
                     this.form.variants.push(
-                        this.variantDefaultData(newVariant)
+                        this.variantDefaultData(newVariant)//khởi tạo dữ liệu mặc định cho mỗi biến thể mới.
                     );
                 });
 
@@ -212,34 +229,34 @@ export default {
             }
 
             // A new single value has been added with existing variation values
-            if (this.hasCommonVariantUids(newVariants, oldVariants)) {
-                const oldVariantsUids = oldVariants.map(({ uids }) => uids);
+            if (this.hasCommonVariantUids(newVariants, oldVariants)) {//Kiểm tra xem có biến thể nào trong newVariants trùng với oldVariants không.
+                const oldVariantsUids = oldVariants.map(({ uids }) => uids);//Tạo một danh sách chỉ chứa UID của các biến thể cũ (oldVariants).
 
-                newVariants.forEach((newVariant, index) => {
-                    if (!oldVariantsUids.includes(newVariant.uids)) {
+                newVariants.forEach((newVariant, index) => {//Duyệt qua từng biến thể mới (newVariants).
+                    if (!oldVariantsUids.includes(newVariant.uids)) {//Nếu newVariant.uids chưa tồn tại trong danh sách oldVariantsUids, nghĩa là đó là một giá trị mới.
                         this.form.variants.splice(
-                            index,
-                            0,
-                            this.variantDefaultData(newVariant)
+                            index,//vị trí chènchèn
+                            0,// 0: Không xóa bất kỳ phần tử nào, chỉ chèn giá trị mới vào.
+                            this.variantDefaultData(newVariant)//Dữ liệu biến thể mới được tạo, sẽ được chèn vào danh sách.
                         );
-                    }
+                    }//Thêm giá trị mới vào danh sách this.form.variants
                 });
 
                 return;
             }
 
-            // A new variation with multiple values has been added
-            const matchedUids = [];
+            // A new variation with multiple values has been added9xử lý khi thêm biến thể mới có nhiều giá trị)
+            const matchedUids = [];//Khai báo danh sách UID đã xử lý (matchedUids)
 
-            oldVariants.forEach(({ uids }) => {
-                newVariants.forEach((newVariant, index) => {
+            oldVariants.forEach(({ uids }) => {//Duyệt qua từng biến thể trong oldVariants
+                newVariants.forEach((newVariant, index) => {//Duyệt qua từng biến thể trong newVariants.
                     const doesUidExist = uids
-                        .split(".")
+                        .split(".")// Tách UID của biến thể cũ thành mảng giá trị.
                         .every((uids) =>
-                            newVariant.uids.split(".").includes(uids)
-                        );
+                            newVariant.uids.split(".").includes(uids)//ách UID của biến thể mới thành mảng giá trị.
+                        );//Kiểm tra xem tất cả giá trị trong UID cũ có tồn tại trong UID mới không
 
-                    if (doesUidExist && !matchedUids.includes(uids)) {
+                    if (doesUidExist && !matchedUids.includes(uids)) {//Nếu biến thể chưa được xử lý (!matchedUids.includes(uids))
                         matchedUids.push(uids);
                         this.setVariantData(newVariant, index);
 
@@ -257,6 +274,7 @@ export default {
             });
         },
 
+        //Xóa biến thể không còn hợp lệ.
         removeVariants(newVariants, oldVariants) {
             this.resetBulkEditVariantFields();
             this.notifyVariantsRemoved(oldVariants.length - newVariants.length);
@@ -314,6 +332,7 @@ export default {
             });
         },
 
+        //Sắp xếp lại biến thể khi thay đổi thứ tự.
         reorderVariants(newVariants, oldVariants) {
             // Reordered variations or variation values
             const newVariantUids = newVariants.map(({ uids }) => uids);
@@ -348,6 +367,7 @@ export default {
             });
         },
 
+        //Kiểm tra xem biến thể cũ có trùng với biến thể mới không.
         hasCommonVariantUids(newVariants, oldVariants) {
             // Check if the old variants UID is present in the new variants
             return oldVariants.some(({ uids }) =>
@@ -355,6 +375,7 @@ export default {
             );
         },
 
+        // Cập nhật UID và tên biến thể.
         setVariantData({ uids, name }, index) {
             if (uids !== undefined) {
                 this.$set(this.form.variants[index], "uid", md5(uids));
@@ -364,6 +385,7 @@ export default {
             this.$set(this.form.variants[index], "name", name);
         },
 
+        //Cấu trúc của một biến thể bao gồm UID, tên, hình ảnh, trạng thái (is_active, is_open, is_default...), quản lý tồn kho (manage_stock), v.v.
         variantDefaultData({ uids, name }) {
             return {
                 position: this.variantPosition++,
@@ -385,6 +407,7 @@ export default {
             this.form.variants = [];
         },
 
+        //Mở trình chọn ảnh để thêm ảnh vào biến thể.
         addVariantMedia(index) {
             const picker = new MediaPicker({ type: "image", multiple: true });
 
@@ -396,10 +419,12 @@ export default {
             });
         },
 
+        //Xóa ảnh khỏi biến thể.
         removeVariantMedia(variantIndex, mediaIndex) {
             this.form.variants[variantIndex].media.splice(mediaIndex, 1);
         },
 
+        // Gửi thông báo thay đổi
         notifyVariantChanges({ count, status }) {
             // toaster(
             //     trans(`product::products.variants.variants_${status}`, {
@@ -416,14 +441,17 @@ export default {
             // );
         },
 
+        //Thông báo khi tạo biến thể
         notifyVariantsCreated(count) {
             this.notifyVariantChanges({ count, status: "created" });
         },
 
+        //Thông báo khi xóa biến thể
         notifyVariantsRemoved(count) {
             this.notifyVariantChanges({ count, status: "removed" });
         },
 
+        //Thông báo khi sắp xếp biến thể
         notifyVariantsReordered() {
             // toaster(trans("product::products.variants.variants_reordered"), {
             //     type: "default",

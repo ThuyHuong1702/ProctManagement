@@ -20,8 +20,8 @@
         <tr class="clickable-row">
             <td>
                 <div class="checkbox">
-                    <input type="checkbox" class="select-row" value="6" id="Gj1En6IIXHIkeGwu">
-                    <label for="Gj1En6IIXHIkeGwu"></label>
+                    <input type="checkbox" class="select-row" name="product_ids[]" id="product_{{ $product->id }}" value="{{ $product->id }}">
+                    <label for="product_{{ $product->id }}"></label>
                 </div>
             </td>
             <td class="dt-type-numeric">{{ $product->id }}</td>
