@@ -13,7 +13,7 @@ use Carbon\Carbon;
 use App\Models\Product;
 use App\Models\Brand;
 use App\Models\Category;
-use App\Models\Variation;
+use App\Models\ProductVariant;
 
 class ProductController
 {
@@ -128,42 +128,32 @@ class ProductController
      * @return Response|JsonResponse
      */
     public function store(Request $request)
-    {
-        // Kiểm tra dữ liệu đầu vào
-        $request->validate([
-            'name' => 'required|string|max:191',
-            'brand_id' => 'required|exists:brands,id',
-            'description' => 'nullable|string',
-            'sort_description' => 'nullable|string',
-            'price' => 'required|numeric|min:0',
-            'special_price' => 'nullable|numeric|min:0',
-            'special_price_type' => 'nullable|string|in:fixed,percent',
-            'special_price_start' => 'nullable|date',
-            'special_price_end' => 'nullable|date',
-            'selling_price' => 'nullable|numeric|min:0',
-            'sku' => 'required|string|unique:products,sku|max:191',
-            'manage_stock' => 'boolean',
-            'qty' => 'integer|min:0',
-            'in_stock' => 'boolean',
-            'viewed' => 'integer|min:0',
-            'is_active' => 'boolean',
-            'new_from' => 'nullable|date',
-            'new_to' => 'nullable|date',
-        ]);
+{
+    dd($request->all());
+    $validated = $request->validate([
+        'name' => 'required|string|max:191',
+        'brand_id' => 'required|exists:brands,id',
+        'price' => 'required|numeric|min:0',
+        'sku' => 'required|string|unique:products,sku|max:191',
+        'variants' => 'nullable|array',
+    ]);
 
-        // Tạo sản phẩm mới
-        $product = Product::create($request->all());
+    $product = Product::create($validated);
 
-        $product->categories()->attach($request->category_id);
-
-        // Kiểm tra xem người dùng có muốn quay lại trang danh sách không
-        if ($request->input('redirect_after_save') == "1") {
-            return redirect()->route('admin.products.index')->with('success', 'Sản phẩm đã được thêm thành công!');
+    // Nếu có biến thể, lưu vào database
+    if ($request->has('variants')) {
+        foreach ($request->variants as $variant) {
+            ProductVariant::create([
+                'product_id' => $product->id,
+                'name' => $variant['name'],
+                'price' => $variant['price'],
+                'sku' => $variant['sku'],
+            ]);
         }
-
-        // Nếu không, quay lại trang tạo sản phẩm với thông báo thành công
-        return redirect()->back()->with('success', 'Sản phẩm đã được lưu!');
     }
+
+    return redirect()->route('admin.products.index')->with('success', 'Sản phẩm đã được lưu!');
+}
 
 
     /**

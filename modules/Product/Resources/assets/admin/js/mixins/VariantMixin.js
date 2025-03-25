@@ -457,5 +457,80 @@ export default {
             //     type: "default",
             // });
         },
+
+        createProduct() {
+            $.ajax({
+                url: "/admin/products",
+                type: "POST",
+                data: JSON.stringify(this.form),
+                contentType: "application/json",
+                dataType: "json",
+                processData: false,
+                headers: {
+                    "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content") // Nếu Laravel có CSRF
+                },
+                success: function (response) {
+                    console.log("Sản phẩm đã được tạo:", response);
+                },
+                error: function (xhr) {
+                    console.error("Lỗi:", xhr.responseJSON);
+                }
+            });
+        },
+
+        saveVariantsToDB() {
+            const productId = this.form.product_id; // Lấy product_id của sản phẩm
+
+            // Kiểm tra nếu không có product_id
+            if (!productId) {
+                alert("❌ Không tìm thấy Product ID!");
+                return;
+            }
+
+            // Tạo danh sách biến thể theo productId
+            const variantsData = {
+                [productId]: this.form.variants.map(variant => ({
+                    name: variant.name, // Tên biến thể sau khi cập nhật
+                    default_variant: variant.default_variant ? 1 : 0, // Chuyển boolean thành 1 hoặc 0
+                    sku: variant.sku,
+                    price: variant.price,
+                    special_price_type: variant.special_price_type,
+                    special_price_start: variant.special_price_start ?? null,
+                    special_price_end: variant.special_price_end ?? null,
+                    manage_stock: variant.manage_stock,
+                    in_stock: variant.in_stock
+                }))
+            };
+
+            // Kiểm tra nếu không có biến thể nào
+            if (!variantsData[productId] || variantsData[productId].length === 0) {
+                alert("❌ Không có biến thể hợp lệ! Vui lòng thêm ít nhất một biến thể.");
+                return;
+            }
+
+            // Tạo dữ liệu form
+            const formData = {
+                name: this.form.name,
+                brand_id: this.form.brand_id,
+                product_id: productId, // Đảm bảo có product_id
+                price: this.form.price,
+                sku: this.form.sku,
+                variants: variantsData // Gửi biến thể đúng định dạng
+            };
+
+
+            // Gửi AJAX request
+            $.ajax({
+                url: "/admin/products",
+                type: "POST",
+                data: JSON.stringify(formData),
+                contentType: "application/json",
+                dataType: "json",
+                headers: {
+                    "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content")
+                }
+            });
+        }
+
     },
 };

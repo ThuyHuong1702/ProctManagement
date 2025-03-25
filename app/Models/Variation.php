@@ -10,22 +10,11 @@ class Variation extends Model
 {
     use HasFactory, SoftDeletes;
 
+    protected $table = 'variations';
     protected $fillable = ['name', 'type', 'is_global', 'position'];
-
-    /**
-     * Một biến thể có nhiều giá trị biến thể.
-     */
-    public function values()
-    {
-        return $this->hasMany(VariationValue::class, 'variation_id', 'id');
-    }
-
-
-    public function products()
-    {
-        return $this->belongsToMany(Product::class, 'product_variations');
-    }
-
-
-
+     // Thêm quan hệ với VariationValue
+     public function values()
+     {
+         return $this->hasMany(VariationValue::class, 'variation_id');
+     }
 }

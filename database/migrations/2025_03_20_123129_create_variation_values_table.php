@@ -6,21 +6,29 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    public function up()
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
     {
         Schema::create('variation_values', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('variation_id')->constrained('variations')->onDelete('cascade');
-            $table->string('label', 191)->nullable();
-            $table->string('value', 191);
-            $table->integer('position')->nullable();
+            $table->increments('id');
+            $table->integer('variation_id')->unsigned()->index();
+            $table->string('label');
+            $table->string('value')->nullable();
+            $table->integer('position')->unsigned()->nullable();
             $table->timestamps();
+
+            $table->foreign('variation_id')->references('id')->on('variations')->onDelete('cascade');
         });
     }
 
-    public function down()
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
     {
+        Schema::disableForeignKeyConstraints();
         Schema::dropIfExists('variation_values');
     }
-
 };

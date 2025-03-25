@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use Modules\Product\Http\Controllers\Admin\ProductController;
+use Modules\Product\Http\Controllers\Admin\ProductVariantController;
 
 Route::get('products', [ProductController::class, 'index'])->name('admin.products.index');
 
@@ -18,3 +19,5 @@ Route::delete('products/{ids}', [ProductController::class, 'destroy'])->name('ad
 Route::get('products/index/table', [ProductController::class, 'table'])->name('admin.products.table');
 
 Route::post('/products/delete', [ProductController::class, 'delete'])->name('admin.products.delete');
+
+Route::post('products/product_variants', [ProductVariantController::class, 'store']);

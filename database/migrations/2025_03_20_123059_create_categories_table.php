@@ -6,22 +6,29 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    public function up()
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
     {
         Schema::create('categories', function (Blueprint $table) {
-            $table->id();
-            $table->unsignedBigInteger('parent_id')->nullable();
-            $table->string('slug', 191);
-            $table->integer('position')->nullable();
-            $table->boolean('is_searchable')->default(1);
-            $table->boolean('is_active')->default(1);
+            $table->increments('id');
+            $table->integer('parent_id')->unsigned()->nullable();
+            $table->string('name');
+            $table->integer('position')->unsigned()->nullable();
+            $table->boolean('is_active');
             $table->timestamps();
+
+            $table->foreign('parent_id')->references('id')->on('categories')->onDelete('cascade');
         });
     }
 
-    public function down()
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
     {
+        Schema::disableForeignKeyConstraints();
         Schema::dropIfExists('categories');
     }
-
 };

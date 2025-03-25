@@ -35,7 +35,6 @@
                     name="description"
                     id="description"
                     class="form-control wysiwyg"
-                    required
                 >
                 </textarea>
                 @error('description')
@@ -53,7 +52,7 @@
                 <select name="brand_id" id="brand-id" class="form-control custom-select-black" required>
                     <option value="">Please Select</option>
                         @foreach($brands as $brand)
-                            <option value="{{ $brand->id }}">{{ $brand->slug }}</option>
+                            <option value="{{ $brand->id }}">{{ $brand->name }}</option>
                         @endforeach
                 </select>
                 @error('brand_id')
@@ -72,7 +71,7 @@
                 <select name="categories" id="categories-id" class="form-control custom-select-black" required>
                     <option value="">Please Select</option>
                         @foreach($categories as $category)
-                            <option value="{{ $category->id }}">{{ $category->slug }}</option>
+                            <option value="{{ $category->id }}">{{ $category->name }}</option>
                         @endforeach
                 </select>
                 @error('categories')

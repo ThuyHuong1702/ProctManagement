@@ -6,22 +6,27 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    public function up()
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
     {
         Schema::create('variations', function (Blueprint $table) {
-            $table->id();
-            $table->string('name', 191)->unique();
-            $table->string('type', 191)->nullable();
-            $table->boolean('is_global')->default(1);
-            $table->integer('position')->nullable();
+            $table->increments('id');
+            $table->string('name');
+            $table->string('type');
+            $table->boolean('is_global')->default(true);
+            $table->integer('position')->unsigned()->nullable();
             $table->softDeletes();
             $table->timestamps();
         });
     }
 
-    public function down()
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
     {
         Schema::dropIfExists('variations');
     }
-
 };

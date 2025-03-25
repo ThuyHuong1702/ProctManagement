@@ -6,35 +6,41 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    public function up()
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
     {
         Schema::create('product_variants', function (Blueprint $table) {
-            $table->id();
-            $table->string('uid', 191)->nullable();
-            $table->text('uids')->nullable();
-            $table->foreignId('product_id')->constrained('products')->onDelete('cascade');
-            $table->string('name', 191);
-            $table->decimal('price', 18, 4);
-            $table->decimal('special_price', 18, 4)->nullable();
-            $table->string('special_price_type', 191)->nullable();
+            $table->increments('id');
+            $table->integer('product_id')->unsigned();
+            $table->string('name');
+            $table->decimal('price', 18, 4)->unsigned()->nullable();
+            $table->decimal('special_price', 18, 4)->unsigned()->nullable();
+            $table->integer('special_price_type')->unsigned()->default(1)->comment('1:Fixed 2:Percent');
             $table->date('special_price_start')->nullable();
             $table->date('special_price_end')->nullable();
-            $table->decimal('selling_price', 18, 4)->nullable();
-            $table->string('sku', 191)->nullable();
-            $table->boolean('manage_stock')->default(1);
-            $table->integer('qty')->default(0);
-            $table->boolean('in_stock')->default(1);
-            $table->boolean('is_default')->default(0);
-            $table->boolean('is_active')->default(1);
-            $table->integer('position')->nullable();
+            $table->decimal('selling_price', 18, 4)->unsigned()->nullable()->comment('percent = price - (special_price / 100) * price, fixed = price - special_price');
+            $table->string('sku')->nullable();
+            $table->boolean('manage_stock')->default(0)->comment("0:Don't Track Inventory, 1:Track Inventory");
+            $table->integer('qty')->nullable();
+            $table->boolean('in_stock')->nullable();
+            $table->boolean('is_default')->nullable();
+            $table->boolean('is_active')->nullable();
+            $table->integer('position')->unsigned()->nullable();
             $table->softDeletes();
             $table->timestamps();
+
+            $table->foreign('product_id')->references('id')->on('products')->onDelete('cascade');
         });
     }
 
-    public function down()
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
     {
+        Schema::disableForeignKeyConstraints();
         Schema::dropIfExists('product_variants');
     }
-
 };

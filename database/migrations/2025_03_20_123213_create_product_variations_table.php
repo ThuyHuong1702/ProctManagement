@@ -6,18 +6,27 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    public function up()
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
     {
         Schema::create('product_variations', function (Blueprint $table) {
-            $table->foreignId('product_id')->constrained('products')->onDelete('cascade');
-            $table->foreignId('variation_id')->constrained('variations')->onDelete('cascade');
+            $table->integer('product_id')->unsigned();
+            $table->integer('variation_id')->unsigned();
+
             $table->primary(['product_id', 'variation_id']);
+            $table->foreign('product_id')->references('id')->on('products')->onDelete('cascade');
+            $table->foreign('variation_id')->references('id')->on('variations')->onDelete('cascade');
         });
     }
 
-    public function down()
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
     {
+        Schema::disableForeignKeyConstraints();
         Schema::dropIfExists('product_variations');
     }
-
 };
