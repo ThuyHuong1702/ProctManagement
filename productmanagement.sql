@@ -396,3 +396,54 @@ thêm vào layout.blade.php trước script
     return redirect()->back()->with('success', 'Sản phẩm đã được lưu!');
     }
 
+SELECT * FROM variations;
+
+SELECT * FROM product_variants
+
+SELECT * FROM variation_values
+
+DELETE FROM products WHERE id=2
+SELECT * FROM product_categories
+
+SELECT * FROM products
+
+
+INSERT INTO brands (name, is_active) VALUES
+('Apple', 1),
+('Samsung', 1),
+('Dell', 1);
+
+
+INSERT INTO categories (parent_id, name, position, is_active) VALUES
+(NULL, 'Laptop', 1, 1),
+(NULL, 'Smartphone', 2, 1),
+(1, 'Macbook', 3, 1);
+
+
+INSERT INTO variations (name, type, is_global, position) VALUES
+('Màu sắc', 'Color', 1, 1),
+('Kích thước', 'Text', 1, 2);
+
+
+INSERT INTO variation_values (variation_id, label, value, position) VALUES
+(1, 'Đỏ', 'red', 1),
+(1, 'Xanh', 'blue', 2),
+(2, 'Nhỏ', 'small', 1),
+(2, 'Lớn', 'large', 2);
+
+INSERT INTO products (brand_id, name, description, price, sku, in_stock, is_active, created_at, updated_at) 
+VALUES 
+(1, 'MacBook Pro 16"', 'Laptop mạnh mẽ cho lập trình viên', 5000, 'MAC16', 1, 1, NOW(), NOW()),
+(2, 'Samsung Galaxy S23', 'Smartphone cao cấp của Samsung', 1200, 'SGS23', 1, 1, NOW(), NOW());
+
+
+INSERT INTO product_variants (product_id, name, price, sku, in_stock, is_active) VALUES
+(1, 'MacBook Pro 16" - Đỏ', 5000, 'MAC16-RED', 1, 1),
+(1, 'MacBook Pro 16" - Xanh', 5000, 'MAC16-BLUE', 1, 1),
+(2, 'Samsung Galaxy S23 - Nhỏ', 1200, 'SGS23-SMALL', 1, 1),
+(2, 'Samsung Galaxy S23 - Lớn', 1200, 'SGS23-LARGE', 1, 1);
+
+
+INSERT INTO products (brand_id, name, price, sku, in_stock, is_active, created_at, updated_at) 
+VALUES 
+(3, 'MacBook Pro 20', 5000, 'MAC16', 1, 1, NOW(), NOW());
