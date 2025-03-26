@@ -15,6 +15,8 @@ use App\Models\Brand;
 use App\Models\Category;
 use App\Models\ProductVariant;
 
+use Modules\Product\Services\ProductService;
+
 class ProductController
 {
     /**
@@ -49,6 +51,12 @@ class ProductController
         return $request->query('globalVariationId') ?? null;
     }
 
+    protected $productService;
+
+    public function __construct(ProductService $productService)
+    {
+        $this->productService = $productService;
+    }
 
     /**
      * Store a newly created resource in storage.
@@ -129,27 +137,57 @@ class ProductController
      */
     public function store(Request $request)
 {
-    dd($request->all());
+    // Xác thực dữ liệu đầu vào
     $validated = $request->validate([
         'name' => 'required|string|max:191',
         'brand_id' => 'required|exists:brands,id',
-        'price' => 'required|numeric|min:0',
-        'sku' => 'required|string|unique:products,sku|max:191',
-        'variants' => 'nullable|array',
+        'variants' => 'nullable|array', // Danh sách biến thể (nếu có)
     ]);
 
-    $product = Product::create($validated);
+    // Gọi ProductService để format dữ liệu
+    $structuredData = ProductService::formatProductVariants($request->all());
 
-    // Nếu có biến thể, lưu vào database
-    if ($request->has('variants')) {
-        foreach ($request->variants as $variant) {
+    // Nếu có biến thể, lưu vào bảng `product_variants`
+    if (!empty($structuredData['variants'])) {
+        // Tìm giá của biến thể mặc định (is_default = 1)
+        $defaultVariant = collect($structuredData['variants'])->firstWhere('is_default', 1);
+        $parentPrice = $defaultVariant['price'] ?? 0;
+
+        // Lưu sản phẩm cha (parent product)
+        $product = Product::create([
+            'name' => $validated['name'] ?? $request->name,
+            'brand_id' => $validated['brand_id'],
+            'sku' => null, // Sản phẩm cha không có SKU riêng
+            'price' => $parentPrice, // Lấy giá của biến thể mặc định nếu có
+            'is_active' => 1,
+        ]);
+
+        // Lưu từng biến thể vào `product_variants`
+        foreach ($structuredData['variants'] as $variant) {
             ProductVariant::create([
                 'product_id' => $product->id,
                 'name' => $variant['name'],
-                'price' => $variant['price'],
                 'sku' => $variant['sku'],
+                'price' => $variant['price'] ?? 0,
+                'special_price' => $variant['special_price'],
+                'special_price_type' => $variant['special_price_type'],
+                'special_price_start' => $variant['special_price_start'],
+                'special_price_end' => $variant['special_price_end'],
+                'manage_stock' => $variant['manage_stock'],
+                'in_stock' => $variant['in_stock'],
+                'is_active' => $variant['is_active'] ?? 1,
+                'is_default' => $variant['is_default'] ?? 0,
             ]);
         }
+    } else {
+        // Nếu không có biến thể, lưu vào `products`
+        Product::create([
+            'name' => $structuredData['name'] ?? $request->name,
+            'brand_id' => $structuredData['brand_id'],
+            'sku' => $request->sku,
+            'price' => $request->price,
+            'is_active' => 1,
+        ]);
     }
 
     return redirect()->route('admin.products.index')->with('success', 'Sản phẩm đã được lưu!');
