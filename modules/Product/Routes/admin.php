@@ -12,7 +12,7 @@ Route::post('products', [ProductController::class, 'store'])->name('admin.produc
 
 Route::get('products/{id}/edit', [ProductController::class, 'edit'])->name('admin.products.edit');
 
-Route::get('products/{id}', [ProductController::class, 'update'])->name('admin.products.update');
+Route::put('products/{id}', [ProductController::class, 'update'])->name('admin.products.update');
 
 Route::delete('products/{ids}', [ProductController::class, 'destroy'])->name('admin.products.destroy');
 

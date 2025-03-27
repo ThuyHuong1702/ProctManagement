@@ -4,7 +4,7 @@ DROP DATABASE IF EXISTS `products_management`;
 CREATE DATABASE `products_management` CHARACTER
 SET
     utf8mb4 COLLATE utf8mb4_unicode_ci;
-    
+
 USE products_management
 
 SELECT * FROM products
@@ -126,8 +126,8 @@ CREATE TABLE `product_variations` (
    CONSTRAINT FK_product_id FOREIGN KEY (`product_id`) REFERENCES products (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = UTF8MB4_UNICODE_CI;
 
-	
-	
+
+
 -- create table product_categories
 
 CREATE TABLE product_categories (
@@ -175,8 +175,8 @@ CREATE TRIGGER before_insert_products
 BEFORE INSERT ON products
 FOR EACH ROW
 BEGIN
-    IF NEW.special_price IS NOT NULL 
-        AND NEW.special_price_start <= CURDATE() 
+    IF NEW.special_price IS NOT NULL
+        AND NEW.special_price_start <= CURDATE()
         AND NEW.special_price_end >= CURDATE() THEN
         IF NEW.special_price_type = 'fixed' THEN
             SET NEW.selling_price = NEW.price - NEW.special_price;
@@ -199,8 +199,8 @@ CREATE TRIGGER before_update_products
 BEFORE UPDATE ON products
 FOR EACH ROW
 BEGIN
-    IF NEW.special_price IS NOT NULL 
-        AND NEW.special_price_start <= CURDATE() 
+    IF NEW.special_price IS NOT NULL
+        AND NEW.special_price_start <= CURDATE()
         AND NEW.special_price_end >= CURDATE() THEN
         IF NEW.special_price_type = 'fixed' THEN
             SET NEW.selling_price = NEW.price - NEW.special_price;
@@ -237,7 +237,7 @@ VALUES
 (5, 2, 'Product 5', NULL, 'product-5', 250.00, 20, 'percent', '2025-03-25', '2025-03-30', 'P1005', 1, 15, 1, 0, 1, NULL, NULL, NULL, NOW(), NOW());
 
 
-INSERT INTO categories (id, parent_id, slug, position, is_searchable, is_active, created_at, updated_at) 
+INSERT INTO categories (id, parent_id, slug, position, is_searchable, is_active, created_at, updated_at)
 VALUES
 (1, NULL, 'electronics', 1, 1, 1, NOW(), NOW()),
 (2, NULL, 'fashion', 2, 1, 1, NOW(), NOW()),
@@ -247,8 +247,8 @@ VALUES
 (6, 2, 'clothing', 6, 1, 1, NOW(), NOW()),
 (7, 2, 'shoes', 7, 1, 1, NOW(), NOW());
 
-SELECT 
-INSERT INTO product_categories (category_id, product_id) 
+SELECT
+INSERT INTO product_categories (category_id, product_id)
 VALUES
 (5, 2), -- Product 2 thuộc danh mục smartphones
 (6, 3), -- Product 3 thuộc danh mục clothing
@@ -293,7 +293,7 @@ SELECT * FROM products
 //////////////////////////////
 composer require tightenco/Ziggy
 npm install ziggy-js
-npm list ziggy-js 
+npm list ziggy-js
 thêm vào app.js
 import route from 'ziggy-js';
 window.route = route;
@@ -431,8 +431,8 @@ INSERT INTO variation_values (variation_id, label, value, position) VALUES
 (2, 'Nhỏ', 'small', 1),
 (2, 'Lớn', 'large', 2);
 
-INSERT INTO products (brand_id, name, description, price, sku, in_stock, is_active, created_at, updated_at) 
-VALUES 
+INSERT INTO products (brand_id, name, description, price, sku, in_stock, is_active, created_at, updated_at)
+VALUES
 (1, 'MacBook Pro 16"', 'Laptop mạnh mẽ cho lập trình viên', 5000, 'MAC16', 1, 1, NOW(), NOW()),
 (2, 'Samsung Galaxy S23', 'Smartphone cao cấp của Samsung', 1200, 'SGS23', 1, 1, NOW(), NOW());
 
@@ -444,6 +444,124 @@ INSERT INTO product_variants (product_id, name, price, sku, in_stock, is_active)
 (2, 'Samsung Galaxy S23 - Lớn', 1200, 'SGS23-LARGE', 1, 1);
 
 
-INSERT INTO products (brand_id, name, price, sku, in_stock, is_active, created_at, updated_at) 
-VALUES 
+INSERT INTO products (brand_id, name, price, sku, in_stock, is_active, created_at, updated_at)
+VALUES
 (3, 'MacBook Pro 20', 5000, 'MAC16', 1, 1, NOW(), NOW());
+
+
+<?php
+
+namespace App\Http\Requests;
+
+use Illuminate\Foundation\Http\FormRequest;
+
+class StoreProductRequest extends FormRequest
+{
+    public function authorize()
+
+    {
+        return true; // Cho phép request này được xử lý
+    }
+
+    public function rules()
+    {
+        return [
+            'name' => 'required|string|max:191',
+            'brand_id' => 'required|exists:brands,id',
+            'variants' => 'nullable|array',
+        ];
+    }
+
+    public function messages()
+    {
+        return [
+            'name.required' => 'Tên sản phẩm là bắt buộc.',
+            'name.string' => 'Tên sản phẩm phải là chuỗi ký tự.',
+            'name.max' => 'Tên sản phẩm không được vượt quá 191 ký tự.',
+            'brand_id.required' => 'Vui lòng chọn thương hiệu.',
+            'brand_id.exists' => 'Thương hiệu không hợp lệ.',
+            'variants.array' => 'Danh sách biến thể phải là một mảng.',
+        ];
+    }
+}
+cách dùng trong controller và blade để hiện thông báo massage
+
+
+1. Sử dụng StoreProductRequest trong Controller
+Trong controller của bạn (ví dụ: ProductController.php), thay vì dùng $request->validate(), bạn chỉ cần khai báo StoreProductRequest như một tham số trong phương thức.
+
+Ví dụ:
+php
+Sao chép
+Chỉnh sửa
+use App\Http\Requests\StoreProductRequest;
+use App\Models\Product;
+use Illuminate\Http\Request;
+
+class ProductController extends Controller
+{
+    public function store(StoreProductRequest $request)
+    {
+        // Lấy dữ liệu đã được validate từ request
+        $validatedData = $request->validated();
+
+        // Tạo sản phẩm mới
+        $product = Product::create($validatedData);
+
+        // Redirect về trang danh sách sản phẩm với thông báo thành công
+        return redirect()->route('products.index')->with('success', 'Sản phẩm đã được tạo thành công!');
+    }
+}
+2. Hiển thị Thông Báo Lỗi trong Blade
+Khi validation không hợp lệ, Laravel tự động redirect lại form và gửi thông báo lỗi đến $errors.
+
+Cách hiển thị tất cả lỗi trong Blade
+Thêm đoạn này vào trong file view của form (ví dụ: create.blade.php):
+
+html
+Sao chép
+Chỉnh sửa
+@if ($errors->any())
+    <div class="alert alert-danger">
+        <ul>
+            @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+@endif
+Cách hiển thị lỗi cho từng trường cụ thể
+Trong form nhập dữ liệu, bạn có thể hiển thị lỗi bên dưới từng input như sau:
+
+html
+Sao chép
+Chỉnh sửa
+<div class="form-group">
+    <label for="name">Tên sản phẩm</label>
+    <input type="text" name="name" class="form-control" value="{{ old('name') }}">
+    @error('name')
+        <span class="text-danger">{{ $message }}</span>
+    @enderror
+</div>
+
+<div class="form-group">
+    <label for="brand_id">Thương hiệu</label>
+    <select name="brand_id" class="form-control">
+        <option value="">Chọn thương hiệu</option>
+        <!-- Thêm các option thương hiệu -->
+    </select>
+    @error('brand_id')
+        <span class="text-danger">{{ $message }}</span>
+    @enderror
+</div>
+3. Hiển Thị Thông Báo Thành Công
+Nếu bạn muốn hiển thị thông báo khi lưu sản phẩm thành công, thêm đoạn này vào view:
+
+html
+Sao chép
+Chỉnh sửa
+@if(session('success'))
+    <div class="alert alert-success">
+        {{ session('success') }}
+    </div>
+@endif

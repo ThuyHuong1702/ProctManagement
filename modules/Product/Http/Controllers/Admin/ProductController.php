@@ -203,7 +203,8 @@ class ProductController
      */
     public function edit($id)
     {
-        return view("{$this->viewPath}.edit", []);
+        $product = Product::findOrFail($id);
+        return view("{$this->viewPath}.edit", compact('product'));
     }
 
 
@@ -212,22 +213,76 @@ class ProductController
      *
      * @param int $id
      */
-    public function update($id)
+    public function update(Request $request, $id)
     {
+        $validated = $request->validate([
+            'name' => 'required|string|max:191',
+            'brand_id' => 'required|exists:brands,id',
+            'variants' => 'nullable|array',
+        ]);
 
+        // Gọi service để xử lý dữ liệu
+        $structuredData = ProductService::formatProductVariantsForUpdate($request->all());
+        //dd($structuredData);
+
+        // Tìm sản phẩm cha
+        $product = Product::findOrFail($id);
+
+        if (!empty($structuredData['variants'])) {
+            // Nếu có biến thể, cập nhật biến thể thay vì sản phẩm chính
+            foreach ($structuredData['variants'] as $variant) {
+                $variantModel = ProductVariant::find($variant['id']);
+                if ($variantModel) {
+                    $variantModel->update($variant);
+                } else {
+                    ProductVariant::create(array_merge($variant, ['product_id' => $product->id]));
+                }
+            }
+
+            // Cập nhật giá sản phẩm cha theo biến thể mặc định
+            $defaultVariant = collect($structuredData['variants'])->firstWhere('is_default', 1);
+            $product->update(['price' => $defaultVariant['price'] ?? $product->price]);
+        } else {
+            // Nếu không có biến thể, cập nhật sản phẩm chính
+            $product->update([
+                'name' => $structuredData['name'],
+                'brand_id' => $structuredData['brand_id'],
+                'sku' => $structuredData['sku'],
+                'price' => $structuredData['price'],
+                'is_active' => $structuredData['is_active'] ?? $product->is_active,
+            ]);
+        }
+
+        return redirect()->route('admin.products.index')->with('success', 'Sản phẩm đã được cập nhật!');
     }
+
+
 
     public function delete(Request $request)
     {
-        $productIds = $request->input('product_ids');
+        try {
+            $productIds = json_decode($request->input('ids'), true);
 
-        if (empty($productIds)) {
-            return response()->json(['success' => false, 'message' => 'Không có sản phẩm nào được chọn!']);
+            if (empty($productIds)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Không có sản phẩm nào được chọn!'
+                ]);
+            }
+
+            Product::whereIn('id', $productIds)->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Sản phẩm đã bị xóa thành công!'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Đã xảy ra lỗi khi xóa sản phẩm!',
+                'error' => $e->getMessage()
+            ]);
         }
-
-        Product::whereIn('id', $productIds)->delete();
-
-        return response()->json(['success' => true, 'message' => 'Sản phẩm đã bị xóa thành công!']);
     }
 
 

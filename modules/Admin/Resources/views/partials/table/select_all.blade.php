@@ -7,44 +7,39 @@
 
 <script>
     document.addEventListener("DOMContentLoaded", function () {
-        // Chọn tất cả checkbox
+        // Chọn tất cả checkbox khi click vào "select-all"
         document.querySelector(".select-all").addEventListener("change", function () {
-            let checkboxes = document.querySelectorAll("input[name='product_ids[]']:not(.select-all)");
+            let checkboxes = document.querySelectorAll("input[type='checkbox']:not(.select-all)");
             checkboxes.forEach(checkbox => checkbox.checked = this.checked);
         });
 
-        // Xử lý xóa sản phẩm khi checkbox được chọn
-        document.querySelector(".btn-delete").addEventListener("click", function () {
-            let selectedIds = [];
-            document.querySelectorAll("input[name='product_ids[]']:checked").forEach((checkbox) => {
-                selectedIds.push(checkbox.value);
-            });
+        // Xóa tất cả bản ghi khi nhấn nút "Xóa tất cả"
+        document.querySelector("#delete-all-records").addEventListener("click", function () {
+            let checkboxes = document.querySelectorAll("input[type='checkbox']:not(.select-all):checked");
 
-            if (selectedIds.length === 0) {
-                alert("Vui lòng chọn ít nhất một sản phẩm để xóa!");
+            if (checkboxes.length === 0) {
+                alert("Không có bản ghi nào được chọn!");
                 return;
             }
 
-            // Xác nhận xóa
-            if (confirm(`Bạn có chắc chắn muốn xóa ${selectedIds.length} sản phẩm đã chọn không?`)) {
+            let ids = Array.from(checkboxes).map(checkbox => checkbox.value);
+
+            if (confirm("Bạn có chắc chắn muốn xóa tất cả các bản ghi đã chọn không?")) {
                 fetch("{{ route('admin.products.delete') }}", {
                     method: "POST",
                     headers: {
-                        "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
-                        "Content-Type": "application/json"
+                        "Content-Type": "application/json",
+                        "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content")
                     },
-                    body: JSON.stringify({ product_ids: selectedIds })
+                    body: JSON.stringify({ ids: ids })
                 })
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        alert("Xóa sản phẩm thành công!");
-                        selectedIds.forEach(id => {
-                            let row = document.querySelector(`input[value='${id}']`).closest("tr");
-                            if (row) row.remove(); // Xóa hàng khỏi bảng ngay lập tức
-                        });
+                        alert("Đã xóa thành công!");
+                        location.reload();
                     } else {
-                        alert("Đã xảy ra lỗi khi xóa sản phẩm!");
+                        alert("Có lỗi xảy ra khi xóa!");
                     }
                 })
                 .catch(error => console.error("Lỗi:", error));
