@@ -2,7 +2,10 @@
 
 @component('admin::components.page.header')
     @slot('title', trans('admin::resource.edit', ['resource' => trans('product::products.product')]))
-    @slot('subtitle', $product->name)
+    @isset($product)
+        @slot('subtitle', $product->name)
+    @endisset
+
 
     <li><a href="{{ route('admin.products.index') }}">{{ trans('product::products.products') }}</a></li>
     <li class="active">{{ trans('admin::resource.edit', ['resource' => trans('product::products.product')]) }}</li>
@@ -12,10 +15,11 @@
     <div id="app" v-cloak>
         <form
             class="product-form"
-            @input="errors.clear($event.target.name)"
-            @submit.prevent
-            ref="form"
+            method="POST"
+            action="{{ route('admin.products.update', ['id' => $product->id]) }}"
         >
+        @csrf
+        @method('PUT')
             <div class="row">
                 <div class="product-form-left-column col-lg-8 col-md-12">
                     @include('product::admin.products.layouts.left_column')
@@ -27,24 +31,11 @@
             </div>
 
             <div class="page-form-footer">
-                <button
-                    type="button"
-                    class="btn btn-default"
-                    :class="{ 'btn-loading': formSubmissionType === 'save' }"
-                    :disabled="formSubmissionType"
-                    @click="submit({ submissionType: 'save' })"
-                >
-                    {{ trans('product::products.save') }}
+                <button type="submit" class="btn btn-default save-btn">
+                    Save
                 </button>
-
-                <button
-                    type="button"
-                    class="btn btn-primary"
-                    :class="{ 'btn-loading': formSubmissionType === 'save_and_exit' }"
-                    :disabled="formSubmissionType"
-                    @click="submit({ submissionType: 'save_and_exit' })"
-                >
-                    {{ trans('product::products.save_and_exit') }}
+                <button type="submit" class="btn btn-primary save-exit-btn">
+                    Save &amp; Exit
                 </button>
             </div>
         </form>
@@ -76,7 +67,7 @@
     @vite([
         'modules/Product/Resources/assets/admin/sass/main.scss',
         'modules/Product/Resources/assets/admin/js/edit.js',
-        'modules/Attribute/Resources/assets/admin/sass/main.scss',
+        //'modules/Attribute/Resources/assets/admin/sass/main.scss',
         'modules/Variation/Resources/assets/admin/sass/main.scss',
         'modules/Option/Resources/assets/admin/sass/main.scss',
         'modules/Media/Resources/assets/admin/sass/main.scss',

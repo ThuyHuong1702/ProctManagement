@@ -20,30 +20,30 @@
         <tr class="clickable-row">
             <td>
                 <div class="checkbox">
-                    <input type="checkbox" class="select-row" name="product_ids[]" id="product_{{ $product->id }}" value="{{ $product->id }}">
-                    <label for="product_{{ $product->id }}"></label>
+                    <input type="checkbox" class="select-row" name="ids[]" id="product-{{ $product->id }}"
+                        value="{{ $product->id }}">
+                    <label for="product-{{ $product->id }}"></label>
                 </div>
             </td>
             <td class="dt-type-numeric">{{ $product->id }}</td>
             <td>
-                <!--
                 <div class="thumbnail-holder">
-                    <img src="https://demo.fleetcart.envaysoft.com/storage/media/YXFIHEgHF4JOGhBdtehoqGzES93CfS2gaxRpIt1U.jpeg" alt="thumbnail">
+                    <img src="https://demo.fleetcart.envaysoft.com/storage/media/YXFIHEgHF4JOGhBdtehoqGzES93CfS2gaxRpIt1U.jpeg"
+                        alt="thumbnail">
                 </div>
-                -->
-                {{ $product->slug }}
             </td>
             <td>
-                <a class="name" href="#">{{ $product->sku }}</a>
+                <a class="name" href="{{ route('admin.products.edit', $product->id) }}">{{ $product->name }}</a>
             </td>
             <td class="text-nowrap">
-                @if($product->special_price && now()->between($product->special_price_start, $product->special_price_end))
-                    <span class="m-r-5">{{ number_format($product->special_price, 2) }}₫</span>
+                @if($product->selling_price < $product->price)
+                    <span class="m-r-5">{{ number_format($product->selling_price, 2) }}₫</span>
                     <del class="text-red">{{ number_format($product->price, 2) }}₫</del>
                 @else
                     {{ number_format($product->price, 2) }}₫
                 @endif
             </td>
+
             <td>
                 <span class="badge badge-primary {{ $product->in_stock ? 'bg-success' : 'bg-danger' }}">
                     {{ $product->in_stock ? 'In Stock' : 'Out of Stock' }}
@@ -111,6 +111,31 @@
 
 @push('scripts')
     <script type="module">
+        $(document).ready(function() {
+            $(document).on('click', '#delete-records', function(event) {
+                const recordsChecked = $('.index-table').find(".select-row:checked");
 
+                if (recordsChecked.length === 0) {
+                    return;
+                }
+
+                const ids = recordsChecked.toArray().reduce((ids, row) => {
+                    return ids.concat(+row.value);
+                }, []);
+                const confirmationModal = $("#confirmation-modal");
+                confirmationModal.modal('show');
+                confirmationModal.find("form").find('input[name="ids"][type="hidden"]').val(JSON.stringify(
+                    ids));
+                confirmationModal.find("form").attr('action', "{{ route('admin.products.delete') }}");
+            });
+
+            @if (session()->has('message'))
+                @if (session('status') === \Modules\Admin\Enums\StatusResponse::SUCCESS)
+                    success("{{ session('message') }}")
+                @elseif (session('status') === \Modules\Admin\Enums\StatusResponse::FAILURE)
+                    error("{{ session('message') }}")
+                @endif
+            @endif
+        });
     </script>
 @endpush

@@ -3,6 +3,9 @@
 namespace Modules\Product\Http\ViewComposers;
 
 use Illuminate\View\View;
+use App\Models\Brand;
+use App\Models\Category;
+use App\Models\Variation;
 
 class ProductEditPageComposer
 {
@@ -15,6 +18,10 @@ class ProductEditPageComposer
      */
     public function compose(View $view)
     {
-        $view->with([]);
+        $brands = Brand::all(); // Lấy danh sách thương hiệu từ DB
+        $categories = Category::all();
+        $variations = Variation::with('values')->get();
+
+        $view->with(compact('brands', 'categories', 'variations'));
     }
 }

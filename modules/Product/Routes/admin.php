@@ -12,7 +12,7 @@ Route::post('products', [ProductController::class, 'store'])->name('admin.produc
 
 Route::get('products/{id}/edit', [ProductController::class, 'edit'])->name('admin.products.edit');
 
-Route::get('products/{id}', [ProductController::class, 'update'])->name('admin.products.update');
+Route::put('products/{id}', [ProductController::class, 'update'])->name('admin.products.update');
 
 Route::delete('products/{ids}', [ProductController::class, 'destroy'])->name('admin.products.destroy');
 
@@ -21,3 +21,7 @@ Route::get('products/index/table', [ProductController::class, 'table'])->name('a
 Route::post('/products/delete', [ProductController::class, 'delete'])->name('admin.products.delete');
 
 Route::post('products/product_variants', [ProductVariantController::class, 'store']);
+
+Route::get('products/search', [ProductController::class, 'search'])->name('admin.products.search');
+
+Route::delete('products/delete', [ProductController::class, 'delete'])->name('admin.products.delete');

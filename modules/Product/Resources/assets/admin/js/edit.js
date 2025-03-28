@@ -13,21 +13,25 @@ new Vue({
     data: {
         formSubmissionType: null,
         form: {
-            brand_id: "",
-            tax_class_id: "",
-            is_active: true,
-            media: [],
-            is_virtual: false,
+            brand_id: '',
+            name: '',
+            description: '',
+            short_description: '',
+            price: '',
+            special_price: '',
+            special_price_type: '',
+            special_price_start: '',
+            special_price_end: '',
+            selling_price: '',
+            sku: '',
             manage_stock: 0,
+            qty: '',
             in_stock: 1,
-            special_price_type: "fixed",
-            meta: {},
-            attributes: [],
-            downloads: [],
+            is_active: true,
+            new_from: '',
+            new_to: '',
             variations: [],
             variants: [],
-            options: [],
-            slug: null,
         },
         errors: new Errors(),
         selectizeConfig: {
@@ -43,6 +47,8 @@ new Vue({
     },
 
     created() {
+        console.log(this.form);
+
         this.setFormData();
         this.setSearchableSelectizeConfig();
         this.setCategoriesSelectizeConfig();
@@ -56,11 +62,9 @@ new Vue({
 
     methods: {
         prepareFormData(formData) {
-            this.prepareAttributes(formData.attributes);
             this.prepareVariations(formData.variations);
             this.prepareVariants(formData.variants);
-            this.prepareOptions(formData.options);
-
+            console.log("Dữ liệu sau khi chuẩn bị:", formData);
             return formData;
         },
 

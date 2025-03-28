@@ -39,7 +39,7 @@
         </dl>
     @endpush
 
-    @push('scripts')
+@push('scripts')
         <script type="module">
             @if (isset($buttons) && in_array('create', $buttons))
                 keypressAction([

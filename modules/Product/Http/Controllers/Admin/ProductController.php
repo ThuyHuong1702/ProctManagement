@@ -15,6 +15,10 @@ use App\Models\Brand;
 use App\Models\Category;
 use App\Models\ProductVariant;
 
+use Modules\Product\Services\ProductService;
+
+use App\Http\Requests\ProductRequest;
+
 class ProductController
 {
     /**
@@ -49,6 +53,12 @@ class ProductController
         return $request->query('globalVariationId') ?? null;
     }
 
+    protected $productService;
+
+    public function __construct(ProductService $productService)
+    {
+        $this->productService = $productService;
+    }
 
     /**
      * Store a newly created resource in storage.
@@ -129,27 +139,65 @@ class ProductController
      */
     public function store(Request $request)
 {
-    dd($request->all());
-    $validated = $request->validate([
-        'name' => 'required|string|max:191',
-        'brand_id' => 'required|exists:brands,id',
-        'price' => 'required|numeric|min:0',
-        'sku' => 'required|string|unique:products,sku|max:191',
-        'variants' => 'nullable|array',
-    ]);
+    //dd($request->all());
+    // Xác thực dữ liệu đầu vào
+    // $validated = $request->validate([
+    //     'name' => 'required|string|max:191',
+    //     'brand_id' => 'required|exists:brands,id',
+    //     'variants' => 'nullable|array', // Danh sách biến thể (nếu có)
+    // ]);
 
-    $product = Product::create($validated);
+    // Gọi ProductService để format dữ liệu
+    $structuredData = ProductService::formatProductVariantsForUpdate($request->all());
 
-    // Nếu có biến thể, lưu vào database
-    if ($request->has('variants')) {
-        foreach ($request->variants as $variant) {
+    //dd($structuredData);
+    // Nếu có biến thể, lưu vào bảng `product_variants`
+    if (!empty($structuredData['variants'])) {
+        // Tìm giá của biến thể mặc định (is_default = 1)
+        $defaultVariant = collect($structuredData['variants'])->firstWhere('is_default', 1);
+        $parentPrice = $defaultVariant['price'] ?? 0;
+        $parentSku = $defaultVariant['sku'] ?? null;
+
+        // Lưu sản phẩm cha (parent product)
+        $product = Product::create([
+            'name' => $structuredData['name'] ?? $request->name,
+            'brand_id' => $structuredData['brand_id'],
+            'sku' => $parentSku, // Lấy sku của biến thể mặc định nếu có
+            'price' => $parentPrice, // Lấy giá của biến thể mặc định nếu có
+            'is_active' => 1,
+        ]);
+
+        // Lưu từng biến thể vào `product_variants`
+        foreach ($structuredData['variants'] as $variant) {
             ProductVariant::create([
                 'product_id' => $product->id,
                 'name' => $variant['name'],
-                'price' => $variant['price'],
                 'sku' => $variant['sku'],
+                'price' => $variant['price'] ?? 0,
+                'special_price' => $variant['special_price'],
+                'special_price_type' => $variant['special_price_type'],
+                'special_price_start' => $variant['special_price_start'],
+                'special_price_end' => $variant['special_price_end'],
+                'manage_stock' => $variant['manage_stock'],
+                'qty' => $variant['qty'],
+                'in_stock' => $variant['in_stock'],
+                'is_active' => $variant['is_active'] ?? 1,
+                'is_default' => $variant['is_default'] ?? 0,
             ]);
         }
+    } else {
+        // Nếu không có biến thể, lưu vào `products`
+        Product::create([
+            'name' => $structuredData['name'] ?? $request->name,
+            'brand_id' => $structuredData['brand_id'],
+            'sku' => $request->sku,
+            'price' => $request->price,
+            'special_price' =>$request-> special_price,
+            'special_price_type' => $request-> special_price_type,
+            'special_price_start' => $request-> special_price_start,
+            'special_price_end' => $request-> special_price_end,
+            'is_active' => 1,
+        ]);
     }
 
     return redirect()->route('admin.products.index')->with('success', 'Sản phẩm đã được lưu!');
@@ -165,7 +213,8 @@ class ProductController
      */
     public function edit($id)
     {
-        return view("{$this->viewPath}.edit", []);
+        $product = Product::findOrFail($id);
+        return view("{$this->viewPath}.edit", compact('product'));
     }
 
 
@@ -174,22 +223,97 @@ class ProductController
      *
      * @param int $id
      */
-    public function update($id)
-    {
+   public function update(Request $request, $id)
+{
+    //$validatedData = $request->validated();
+    $structuredData = ProductService::formatProductVariantsForUpdate($request->all());
 
+    $product = Product::findOrFail($id);
+
+    if (!empty($structuredData['variants'])) {
+        // Nếu có biến thể, cập nhật sản phẩm chính với giá của biến thể mặc định
+        $defaultVariant = collect($structuredData['variants'])->firstWhere('is_default', 1);
+        $parentPrice = $defaultVariant['price'] ?? 0;
+
+        $product->update([
+            'name' => $structuredData['name'] ?? $request->name,
+            'brand_id' => $structuredData['brand_id'],
+            'sku' => null,
+            'price' => $parentPrice,
+            'is_active' => 1,
+        ]);
+
+        // Xóa tất cả biến thể cũ trước khi thêm mới
+        ProductVariant::where('product_id', $product->id)->delete();
+
+        // Lưu từng biến thể mới vào `product_variants`
+        foreach ($structuredData['variants'] as $variant) {
+            ProductVariant::create([
+                'product_id' => $product->id,
+                'name' => $variant['name'],
+                'sku' => $variant['sku'],
+                'price' => $variant['price'] ?? 0,
+                'special_price' => $variant['special_price'],
+                'special_price_type' => $variant['special_price_type'],
+                'special_price_start' => $variant['special_price_start'],
+                'special_price_end' => $variant['special_price_end'],
+                'manage_stock' => $variant['manage_stock'],
+                'qty' => $variant['qty'],
+                'in_stock' => $variant['in_stock'],
+                'is_active' => $variant['is_active'] ?? 1,
+                'is_default' => $variant['is_default'] ?? 0,
+            ]);
+        }
+    } else {
+        // Nếu không có biến thể, xóa toàn bộ biến thể cũ
+        ProductVariant::where('product_id', $product->id)->delete();
+
+        // Cập nhật sản phẩm chính
+        $product->update([
+            'name' => $structuredData['name'],
+            'brand_id' => $structuredData['brand_id'],
+            'sku' => $structuredData['sku'],
+            'price' => $structuredData['price'],
+            'is_active' => $structuredData['is_active'] ?? $product->is_active,
+        ]);
     }
 
-    public function delete(Request $request)
-    {
-        $productIds = $request->input('product_ids');
+    return redirect()->route('admin.products.index')->with('success', 'Sản phẩm đã được cập nhật!');
+}
 
-        if (empty($productIds)) {
-            return response()->json(['success' => false, 'message' => 'Không có sản phẩm nào được chọn!']);
+
+public function delete(Request $request)
+{
+    try {
+        $ids = $request->input('ids');
+
+        if (empty($ids)) {
+            return response()->json(['error' => true, 'message' => 'No IDs provided'], 400);
         }
 
-        Product::whereIn('id', $productIds)->delete();
+        // Kiểm tra nếu tất cả các ID có tồn tại trong cơ sở dữ liệu
+        $ProductIds = Product::whereIn('id', $ids)->pluck('id');
+        if (count($ProductIds) !== count($ids)) {
+            return response()->json(['error' => true, 'message' => 'Some IDs are invalid'], 400);
+        }
 
-        return response()->json(['success' => true, 'message' => 'Sản phẩm đã bị xóa thành công!']);
+        // Tiến hành xóa
+        Product::destroy($ids);
+        return response()->json(['message' => __('Thành công')]);
+    } catch (\Exception $ex) {
+        report($ex);
+        return response()->json([
+            'error' => true,
+            'message' => __('Admin::business-office.delete.failure')
+        ]);
+    }
+}
+    public function search(Request $request)
+    {
+        $keyword = $request->input('keyword');
+        $products = Product::where('name', 'like', "%$keyword%")->get();
+
+        return view('admin.products.index', compact('products'));
     }
 
 
