@@ -101,6 +101,7 @@ class ProductService
         'description' => $data['description'] ?? null,
         'brand_id' => $data['brand_id'] ?? null,
         'category_id' => $data['categories'] ?? null,
+
         'short_description' => $data['short_description'] ?? null,
         'new_from' => $data['new_from'] ?? null,
         'new_to' => $data['new_to'] ?? null,

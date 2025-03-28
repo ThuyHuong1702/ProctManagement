@@ -74,3 +74,4 @@
         'modules/Media/Resources/assets/admin/js/main.js',
     ])
 @endpush
+

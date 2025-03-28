@@ -196,6 +196,7 @@ class ProductController
             'special_price_type' => $request-> special_price_type,
             'special_price_start' => $request-> special_price_start,
             'special_price_end' => $request-> special_price_end,
+
             'is_active' => 1,
         ]);
     }
@@ -314,6 +315,7 @@ public function delete(Request $request)
         $products = Product::where('name', 'like', "%$keyword%")->get();
 
         return view('admin.products.index', compact('products'));
+
     }
 
 
