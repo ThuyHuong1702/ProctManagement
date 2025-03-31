@@ -11,7 +11,7 @@ class ProductRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return true; // Cho phép tất cả người dùng gửi request này
+        return true;
     }
 
     /**
@@ -22,35 +22,27 @@ class ProductRequest extends FormRequest
         return [
             'name' => 'required|string|max:191',
             'description' => 'nullable|string',
-            'short_description' => 'nullable|string|max:500',
             'brand_id' => 'required|exists:brands,id',
-            'price' => 'required|numeric|gte:0',
-            'special_price' => 'nullable|numeric|gte:0',
-            'special_price_type' => 'nullable|in:1,2', // 1: Fixed, 2: Percent
-            'special_price_start' => 'nullable|date|before_or_equal:special_price_end',
-            'special_price_end' => 'nullable|date|after_or_equal:special_price_start',
-            'sku' => 'nullable|string|max:50',
-            'manage_stock' => 'boolean',
-            'qty' => 'nullable|integer|gte:0',
-            'in_stock' => 'boolean',
-            'is_active' => 'boolean',
+            'category_id' => 'required|exists:categories,id',
+            'short_description' => 'nullable|string|max:500',
             'new_from' => 'nullable|date',
             'new_to' => 'nullable|date|after_or_equal:new_from',
+            'price' => 'required|numeric|gte:0',
+            'special_price' => 'nullable|numeric|gte:0',
+            'special_price_start' => 'nullable|date|before_or_equal:special_price_end',
+            'special_price_end' => 'nullable|date|after_or_equal:special_price_start',
+            'qty' => 'nullable|integer|gte:0',
+            'variations' => 'nullable|array',
 
-            // Xác thực biến thể (nếu có)
+            // Validation cho variants
             'variants' => 'nullable|array',
             'variants.*.name' => 'required_with:variants|string|max:191',
             'variants.*.sku' => 'nullable|string|max:50',
             'variants.*.price' => 'required_with:variants|numeric|gte:0',
             'variants.*.special_price' => 'nullable|numeric|gte:0',
-            'variants.*.special_price_type' => 'nullable|in:1,2',
             'variants.*.special_price_start' => 'nullable|date|before_or_equal:variants.*.special_price_end',
             'variants.*.special_price_end' => 'nullable|date|after_or_equal:variants.*.special_price_start',
-            'variants.*.manage_stock' => 'boolean',
             'variants.*.qty' => 'nullable|integer|gte:0',
-            'variants.*.in_stock' => 'boolean',
-            'variants.*.is_active' => 'boolean',
-            'variants.*.is_default' => 'boolean',
         ];
     }
 
@@ -74,7 +66,13 @@ class ProductRequest extends FormRequest
             'qty.min' => 'Số lượng không được nhỏ hơn 0.',
             'new_to.after_or_equal' => 'Ngày kết thúc mới phải sau hoặc bằng ngày bắt đầu mới.',
 
-            // Thông báo lỗi cho biến thể
+            // Thông báo lỗi cho variations
+            'variations.*.id.required_with' => 'ID của variation không được để trống.',
+            'variations.*.name.required_with' => 'Tên variation là bắt buộc.',
+            'variations.*.values.*.label.required_with' => 'Nhãn của giá trị variation là bắt buộc.',
+            'variations.*.values.*.value.required_with' => 'Giá trị của variation là bắt buộc.',
+
+            // Thông báo lỗi cho variants
             'variants.*.name.required_with' => 'Tên biến thể là bắt buộc khi có biến thể.',
             'variants.*.price.required_with' => 'Giá biến thể là bắt buộc khi có biến thể.',
             'variants.*.price.numeric' => 'Giá biến thể phải là số.',

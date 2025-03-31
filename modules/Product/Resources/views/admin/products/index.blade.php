@@ -70,7 +70,7 @@
     @endslot
 
     @slot('tPagination')
-        {!! $products->appends(request()->input())->links('admin::pagination.simple') !!}
+        {!! $products->appends(request()->input())->links() !!}
     @endslot
 
 @endcomponent

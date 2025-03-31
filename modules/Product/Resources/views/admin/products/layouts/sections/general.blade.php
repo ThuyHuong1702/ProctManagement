@@ -28,7 +28,6 @@
         <div class="form-group row">
             <label for="description" class="col-sm-12 control-label text-left">
                 {{ trans('product::attributes.description') }}
-                <span class="text-red">*</span>
             </label>
 
             <div class="col-sm-12">
@@ -75,10 +74,12 @@
                 <select name="categories" id="categories-id" class="form-control custom-select-black" required>
                     <option value="">Please Select</option>
                         @foreach($categories as $category)
-                            <option value="{{ $category->id }}" {{ old('categories', $product->category_id ?? '') == $category->id ? 'selected' : '' }}>
+                            <option value="{{ $category->id }}"
+                                {{ in_array($category->id, $product->categories->pluck('id')->toArray() ?? []) ? 'selected' : '' }}>
                                 {{ $category->name }}
                             </option>
                         @endforeach
+                </select>
                 </select>
                 @error('categories')
                     <span class="help-block text-red">{{ $message }}</span>

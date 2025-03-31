@@ -31,7 +31,7 @@
                         </span>
 
                         <input type="number" min="0" name="price" step="0.1" id="price"
-                            class="form-control" @wheel="$event.target.blur()" v-model="form.price">
+                            class="form-control" value="{{ old('name', $product->price ?? '') }}" >
                     </div>
 
                     <span class="help-block text-red" v-if="errors.has('price')" v-text="errors.get('price')"></span>
@@ -45,16 +45,17 @@
 
                 <div class="col-sm-12">
                     <div class="input-group">
-                        <span class="input-group-addon">
-                            @{{ form.special_price_type === 'fixed' ? 'VNĐ' : '%' }}
+                        <span class="input-group-addon" id="special-price-unit">
+                            {{ old('special_price_type', $product->special_price_type ?? '') == 1 ? 'VNĐ' : '%' }}
                         </span>
 
                         <input type="number" min="0" name="special_price" step="0.1" id="special-price"
-                            class="form-control" @wheel="$event.target.blur()" v-model="form.special_price">
+                            class="form-control" value="{{ old('special_price', $product->special_price ?? '') }}">
                     </div>
 
-                    <span class="help-block text-red" v-if="errors.has('special_price')"
-                        v-text="errors.get('special_price')"></span>
+                    @if ($errors->has('special_price'))
+                        <span class="help-block text-red">{{ $errors->first('special_price') }}</span>
+                    @endif
                 </div>
             </div>
 
@@ -64,19 +65,19 @@
                 </label>
 
                 <div class="col-sm-12">
-                    <select name="special_price_type" id="special-price-type" class="form-control custom-select-black"
-                        v-model="form.special_price_type">
-                        <option value="fixed">
+                    <select name="special_price_type" id="special-price-type" class="form-control custom-select-black" onchange="updatePriceUnit()">
+                        <option value="1" {{ old('special_price_type', $product->special_price_type ?? '') == 1 ? 'selected' : '' }}>
                             {{ trans('product::products.form.special_price_types.fixed') }}
                         </option>
 
-                        <option value="percent">
+                        <option value="2" {{ old('special_price_type', $product->special_price_type ?? '') == 2 ? 'selected' : '' }}>
                             {{ trans('product::products.form.special_price_types.percent') }}
                         </option>
                     </select>
 
-                    <span class="help-block text-red" v-if="errors.has('special_price_type')"
-                        v-text="errors.get('special_price_type')"></span>
+                    @if ($errors->has('special_price_type'))
+                        <span class="help-block text-red">{{ $errors->first('special_price_type') }}</span>
+                    @endif
                 </div>
             </div>
 
@@ -92,7 +93,7 @@
                         </span>
 
                         <flat-pickr name="special_price_start" id="special-price-start" class="form-control"
-                            :config="flatPickrConfig" v-model="form.special_price_start">
+                            :config="flatPickrConfig" value="{{ old('special_price_start', $product->special_price_start ?? '') }}">
                         </flat-pickr>
 
                         <span
@@ -121,7 +122,7 @@
                         </span>
 
                         <flat-pickr name="special_price_end" id="special-price-end" class="form-control"
-                            :config="flatPickrConfig" v-model="form.special_price_end">
+                            :config="flatPickrConfig" value="{{ old('special_price_end', $product->special_price_end ?? '') }}">
                         </flat-pickr>
 
                         <span
@@ -140,3 +141,17 @@
         </template>
     </div>
 </template>
+
+<script>
+    function updatePriceUnit() {
+        let specialPriceType = document.getElementById('special-price-type').value;
+        let priceUnit = document.getElementById('special-price-unit');
+
+        priceUnit.textContent = specialPriceType == 1 ? 'VNĐ' : '%';
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        updatePriceUnit();
+    });
+</script>
+

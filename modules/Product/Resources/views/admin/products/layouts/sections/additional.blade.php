@@ -15,7 +15,9 @@
             </label>
 
             <div class="col-sm-12">
-                <textarea name="short_description" rows="6" cols="10" id="short-description" class="form-control" v-model="form.short_description"></textarea>
+                <textarea name="short_description" rows="6" cols="10" id="short-description" class="form-control">
+                    {{ old('short_description ', $product->short_description ?? '') }}
+                </textarea>
 
                 <span class="help-block text-red" v-if="errors.has('short_description')" v-text="errors.get('short_description')"></span>
             </div>
@@ -37,7 +39,7 @@
                         id="new-from"
                         class="form-control"
                         :config="flatPickrConfig"
-                        v-model="form.new_from"
+                        value="{{ old('new_from', $product->new_from ?? '') }}"
                     >
                     </flat-pickr>
 
@@ -70,7 +72,7 @@
                         id="new-to"
                         class="form-control"
                         :config="flatPickrConfig"
-                        v-model="form.new_to"
+                        value="{{ old('new_to', $product->new_to ?? '') }}"
                     >
                     </flat-pickr>
 

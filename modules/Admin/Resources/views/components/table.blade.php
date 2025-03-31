@@ -52,12 +52,6 @@
             </div>
         </div>
         <div class="row dt-layout-row">
-            <div>
-                {{$ttotal}}
-            </div>
-            <div>
-                {{$tchange}}
-            </div>
         </div>
     </div>
 </div>

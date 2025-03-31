@@ -12,7 +12,7 @@
 @endcomponent
 
 @section('content')
-    <div id="app" v-cloak>
+    <div id="app">
         <form
             class="product-form"
             method="POST"
@@ -26,7 +26,7 @@
                 </div>
 
                 <div class="product-form-right-column col-lg-4 col-md-12">
-                    @include('product::admin.products.layouts.right_column')
+                    @include('product::admin.products.layouts.right_column', ['product' => $product])
                 </div>
             </div>
 
@@ -67,7 +67,6 @@
     @vite([
         'modules/Product/Resources/assets/admin/sass/main.scss',
         'modules/Product/Resources/assets/admin/js/edit.js',
-        //'modules/Attribute/Resources/assets/admin/sass/main.scss',
         'modules/Variation/Resources/assets/admin/sass/main.scss',
         'modules/Option/Resources/assets/admin/sass/main.scss',
         'modules/Media/Resources/assets/admin/sass/main.scss',

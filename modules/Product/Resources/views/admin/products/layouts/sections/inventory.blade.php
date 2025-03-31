@@ -31,14 +31,34 @@
                         name="sku"
                         id="sku"
                         class="form-control"
-                        v-model="form.sku"
+                        value="{{ old('sku', $product->sku ?? '') }}"
                     >
 
                     <span class="help-block text-red" v-if="errors.has('sku')" v-text="errors.get('sku')"></span>
                 </div>
             </div>
 
-            <div class="form-group row" v-if="form.manage_stock == 1">
+            <div class="form-group row">
+                <label for="manage_stock" class="col-sm-12 control-label text-left">
+                    {{ trans('product::attributes.manage_stock') }}
+
+                </label>
+
+                <div class="col-sm-12">
+                    <select name="manage_stock" id="manage-stock" class="form-control custom-select-black">
+                        <option value="0" {{ old('manage_stock', $product->manage_stock ?? '') == 0 ? 'selected' : '' }}>
+                            {{ trans('product::products.form.manage_stock_states.0') }}
+                        </option>
+
+                        <option value="1" {{ old('manage_stock', $product->manage_stock ?? '') == 1 ? 'selected' : '' }}>
+                            {{ trans('product::products.form.manage_stock_states.1') }}
+                        </option>
+                    </select>
+                    <span class="help-block text-red"></span>
+                </div>
+            </div>
+
+            <div class="form-group row" id="qty-group" style="display: {{ old('manage_stock', $product->manage_stock ?? '') == 1 ? 'block' : 'none' }};">
                 <label for="qty" class="col-sm-12 control-label text-left">
                     {{ trans('product::attributes.qty') }}
                     <span class="text-red">*</span>
@@ -52,13 +72,51 @@
                         step="1"
                         id="qty"
                         class="form-control"
-                        @wheel="$event.target.blur()"
-                        v-model.number="form.qty"
-                    >
+                        onwheel="this.blur();"
+                        value="{{ old('qty', $product->qty ?? '') }}"
 
-                    <span class="help-block text-red" v-if="errors.has('qty')" v-text="errors.get('qty')"></span>
+                    >
+                    @error('qty')
+                        <span class="help-block text-red">{{ $message }}</span>
+                    @enderror
                 </div>
             </div>
+
+            <div class="form-group row">
+                <label for="in_stock" class="col-sm-12 control-label text-left">
+                    {{  trans('product::attributes.in_stock') }}
+
+                </label>
+
+                <div class="col-sm-12">
+                    <select name="in_stock" id="in-stock" class="form-control custom-select-black">
+                        <option value="0" {{ old('in_stock', $product->in_stock ?? '') == 0 ? 'selected' : '' }}>
+                            {{ trans('product::products.form.stock_availability_states.0') }}
+                        </option>
+
+                        <option value="1" {{ old('in_stock', $product->in_stock ?? '') == 1 ? 'selected' : '' }}>
+                            {{ trans('product::products.form.stock_availability_states.1') }}
+                        </option>
+                    </select>
+                    <span class="help-block text-red"></span>
+                </div>
+            </div>
+
         </template>
     </div>
 </template>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const manageStock = document.getElementById("manage-stock");
+        const qtyGroup = document.getElementById("qty-group");
+
+        manageStock.addEventListener("change", function() {
+            if (this.value == "1") {
+                qtyGroup.style.display = "block";
+            } else {
+                qtyGroup.style.display = "none";
+            }
+        });
+    });
+</script>

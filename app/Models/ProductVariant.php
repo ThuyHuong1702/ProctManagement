@@ -38,7 +38,7 @@ class ProductVariant extends Model
 
     public function setSpecialPriceTypeAttribute($value)
     {
-        $this->attributes['special_price_type'] = ($value === 'fixed') ? 1 : 2;
+        $this->attributes['special_price_type'] = ($value == 1) ? 1 : 2;
     }
 
     public function product()

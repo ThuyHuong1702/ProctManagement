@@ -91,31 +91,6 @@ class ProductController
         // Truy vấn sản phẩm với điều kiện sắp xếp động
         $products = Product::orderBy($sortBy, $sortOrder)->paginate($perPage);
 
-        // Định dạng dữ liệu trước khi gửi đến view
-        $products->getCollection()->transform(function ($product) {
-            $now = Carbon::now();
-
-            // Kiểm tra nếu ngày hiện tại nằm trong khoảng giảm giá
-            $isDiscountActive = $product->special_price_start && $product->special_price_end &&
-                                $now->between($product->special_price_start, $product->special_price_end);
-
-            // Định dạng giá
-            if ($isDiscountActive && $product->selling_price && $product->selling_price != $product->price) {
-                $product->formatted_price = "<span class='text-danger fw-bold'>" . number_format($product->selling_price, 2) . " VNĐ</span> " .
-                                            "<del class='text-muted ms-2'>" . number_format($product->price, 2) . " VNĐ</del>";
-            } else {
-                $product->formatted_price = "<span class='fw-bold'>" . number_format($product->price, 2) . " VNĐ</span>";
-            }
-
-            // Tính thời gian cập nhật
-            $days_diff = $now->diffInDays($product->updated_at);
-            $product->formatted_updated_at = ($days_diff < 30) ?
-                "<span class='text-success'>{$days_diff} ngày trước</span>" :
-                "<span class='text-primary'>" . floor($days_diff / 30) . " tháng trước</span>";
-
-            return $product;
-        });
-
         // Trả dữ liệu về view
         return view("{$this->viewPath}.index", compact('products', 'sortBy', 'sortOrder', 'perPage', 'totalProducts'));
     }
@@ -128,7 +103,8 @@ class ProductController
      */
     public function create()
     {
-        return view("{$this->viewPath}.create");
+        $product = new Product(); // Tạo một đối tượng rỗng
+        return view("{$this->viewPath}.create", compact('product'));
     }
 
 
@@ -137,7 +113,7 @@ class ProductController
      *
      * @return Response|JsonResponse
      */
-    public function store(Request $request)
+    public function store(ProductRequest $request)
 {
     //dd($request->all());
     // Xác thực dữ liệu đầu vào
@@ -156,6 +132,10 @@ class ProductController
         // Tìm giá của biến thể mặc định (is_default = 1)
         $defaultVariant = collect($structuredData['variants'])->firstWhere('is_default', 1);
         $parentPrice = $defaultVariant['price'] ?? 0;
+        $parentSpecialPrice = $defaultVariant['special_price'] ?? 0;
+        $parentPriceType = isset($defaultVariant['special_price_type']) ? ($defaultVariant['special_price_type'] == 1 ? 1 : 2) : 1;
+        $parentSpecialPriceStart = $defaultVariant['special_price_start'] ?? null;
+        $parentSpecialPriceEnd = $defaultVariant['special_price_end'] ?? null;
         $parentSku = $defaultVariant['sku'] ?? null;
 
         // Lưu sản phẩm cha (parent product)
@@ -164,6 +144,10 @@ class ProductController
             'brand_id' => $structuredData['brand_id'],
             'sku' => $parentSku, // Lấy sku của biến thể mặc định nếu có
             'price' => $parentPrice, // Lấy giá của biến thể mặc định nếu có
+            'special_price' => $parentSpecialPrice,
+            'special_price_type' => $parentPriceType,
+            'special_price_start' => $parentSpecialPriceStart,
+            'special_price_end' => $parentSpecialPriceEnd,
             'is_active' => 1,
         ]);
 
@@ -187,18 +171,28 @@ class ProductController
         }
     } else {
         // Nếu không có biến thể, lưu vào `products`
-        Product::create([
+        $product = Product::create([
             'name' => $structuredData['name'] ?? $request->name,
+            'description' => $structuredData['description'] ?? null,
             'brand_id' => $structuredData['brand_id'],
-            'sku' => $request->sku,
-            'price' => $request->price,
-            'special_price' =>$request-> special_price,
-            'special_price_type' => $request-> special_price_type,
-            'special_price_start' => $request-> special_price_start,
-            'special_price_end' => $request-> special_price_end,
-
-            'is_active' => 1,
+            'sku' => $structuredData['sku'],
+            'price' => $structuredData['price'],
+            'special_price' =>$structuredData['special_price'],
+            'special_price_type' => $structuredData['special_price_type'],
+            'special_price_start' => $structuredData['special_price_start'],
+            'special_price_end' => $structuredData['special_price_end'],
+            'is_active' => $structuredData['is_active'] ?? 1,
+            'short_description' => $structuredData['short_description'] ?? null,
+            'new_from' => $structuredData['new_from'] ?? null,
+            'new_to' => $structuredData['new_to'] ?? null,
+            'manage_stock' => $structuredData['manage_stock'] ?? 0,
+            'qty' => $structuredData['qty'] ?? null,
+            'in_stock' => $data['in_stock'] ?? 1,
         ]);
+    }
+     // Lưu dữ liệu vào bảng `product_categories`
+     if (!empty($structuredData['category_id'])) {
+        $product->categories()->sync($structuredData['category_id']);
     }
 
     return redirect()->route('admin.products.index')->with('success', 'Sản phẩm đã được lưu!');
@@ -235,12 +229,19 @@ class ProductController
         // Nếu có biến thể, cập nhật sản phẩm chính với giá của biến thể mặc định
         $defaultVariant = collect($structuredData['variants'])->firstWhere('is_default', 1);
         $parentPrice = $defaultVariant['price'] ?? 0;
-
+        $parentSpecialPrice = $defaultVariant['special_price'] ?? 0;
+        $parentPriceType = isset($defaultVariant['special_price_type']) ? ($defaultVariant['special_price_type'] == 1 ? 1 : 2) : 1;
+        $parentSpecialPriceStart = $defaultVariant['special_price_start'] ?? null;
+        $parentSpecialPriceEnd = $defaultVariant['special_price_end'] ?? null;
         $product->update([
             'name' => $structuredData['name'] ?? $request->name,
             'brand_id' => $structuredData['brand_id'],
             'sku' => null,
             'price' => $parentPrice,
+            'special_price' => $parentSpecialPrice,
+            'special_price_type' => $parentPriceType,
+            'special_price_start' => $parentSpecialPriceStart,
+            'special_price_end' => $parentSpecialPriceEnd,
             'is_active' => 1,
         ]);
 
@@ -272,11 +273,27 @@ class ProductController
         // Cập nhật sản phẩm chính
         $product->update([
             'name' => $structuredData['name'],
+            'description' => $structuredData['description'] ?? null,
             'brand_id' => $structuredData['brand_id'],
             'sku' => $structuredData['sku'],
             'price' => $structuredData['price'],
+            'special_price' => $structuredData['special_price'],
+            'special_price_type' => $structuredData['special_price_type'],
+            'special_price_start' => $structuredData['special_price_start'],
+            'special_price_end' => $structuredData['special_price_end'],
             'is_active' => $structuredData['is_active'] ?? $product->is_active,
+            'short_description' => $structuredData['short_description'] ?? null,
+            'new_from' => $structuredData['new_from'] ?? null,
+            'new_to' => $structuredData['new_to'] ?? null,
+            'manage_stock' => $structuredData['manage_stock'] ?? 0,
+            'qty' => $structuredData['qty'] ?? null,
+            'in_stock' => $data['in_stock'] ?? 1,
         ]);
+
+    }
+    // Cập nhật danh mục của sản phẩm
+    if (!empty($structuredData['category_id'])) {
+        $product->categories()->sync($structuredData['category_id']);
     }
 
     return redirect()->route('admin.products.index')->with('success', 'Sản phẩm đã được cập nhật!');

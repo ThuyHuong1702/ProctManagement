@@ -17,7 +17,7 @@
                 </div>
 
                 <div class="product-form-right-column col-lg-4 col-md-12">
-                    @include('product::admin.products.layouts.right_column')
+                    @include('product::admin.products.layouts.right_column', ['product' => $product])
                 </div>
             </div>
 

@@ -14,7 +14,7 @@ class Product extends Model
     use HasFactory, SoftDeletes;
 
     protected $table = 'products';
-    protected $fillable = ['brand_id', 'name', 'description', 'short_description', 'price', 'special_price', 'special_price_type', 'special_price_start', 'special_price_end', 'selling_price', 'sku', 'manage_stock', 'qty', 'in_stock', 'is_active', 'new_from', 'new_to'];
+    protected $fillable = ['brand_id', 'category_id', 'name', 'description', 'short_description', 'price', 'special_price', 'special_price_type', 'special_price_start', 'special_price_end', 'selling_price', 'sku', 'manage_stock', 'qty', 'in_stock', 'is_active', 'new_from', 'new_to'];
 
     protected static function boot()
     {
@@ -24,12 +24,17 @@ class Product extends Model
             if (empty($product->sku)) {
                 $product->sku = self::generateSku($product->name);
             }
+            $product->selling_price = $product->getSellingPriceAttribute();
+        });
+
+        static::updating(function ($product) {
+            $product->selling_price = $product->getSellingPriceAttribute();
         });
     }
 
     public function setSpecialPriceTypeAttribute($value)
     {
-        $this->attributes['special_price_type'] = ($value === 'fixed') ? 1 : 2;
+        $this->attributes['special_price_type'] = ($value == 1) ? 1 : 2;
     }
 
     public function brand()
