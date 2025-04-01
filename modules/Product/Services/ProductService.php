@@ -101,6 +101,11 @@ class ProductService
             'is_active' => isset($data["variants_{$variantId}_is_active"]) ? ($data["variants_{$variantId}_is_active"] === 'on' ? 1 : 0) : 0,
             'is_default' => isset($data["default_variant"]) && $data["default_variant"] === $variantId ? 1 : 0,
         ];
+
+        // Nếu biến thể là mặc định, đảm bảo nó cũng phải là active
+        if ($product['variants'][$variantId]['is_default'] == 1) {
+            $product['variants'][$variantId]['is_active'] = 1;
+        }
     }
 
     return $product;

@@ -119,13 +119,6 @@ class ProductController
 {
     $request->validated();
     //dd($validatedData);
-    // Xác thực dữ liệu đầu vào
-    // $validated = $request->validate([
-    //     'name' => 'required|string|max:191',
-    //     'brand_id' => 'required|exists:brands,id',
-    //     'variants' => 'nullable|array', // Danh sách biến thể (nếu có)
-    // ]);
-
     // Gọi ProductService để format dữ liệu
     $structuredData = ProductService::formatProductVariantsForUpdate($request->all());
 
@@ -198,7 +191,11 @@ class ProductController
         $product->categories()->sync($structuredData['category_id']);
     }
 
-    return redirect()->route('admin.products.index')->with('success', 'Sản phẩm đã được lưu!');
+    if ($request->input('redirect_after_save') == "1") {
+        return redirect()->route('admin.products.index')->with('success', 'Sản phẩm đã được lưu!');
+    } else {
+        return redirect()->back()->with('success', 'Sản phẩm đã được lưu!');
+    }
 }
 
 

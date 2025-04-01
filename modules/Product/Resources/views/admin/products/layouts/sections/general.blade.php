@@ -87,10 +87,10 @@
         </div>
 
         <div class="form-group row">
-            {{-- <label for="is-active" class="col-sm-12 control-label text-left">
+            <label for="is-active" class="col-sm-12 control-label text-left">
                 {{ trans('product::attributes.is_active') }}
-                <span class="text-red">*</span>
-            </label> --}}
+
+            </label>
 
             <div class="col-sm-9">
                 <div class="switch">

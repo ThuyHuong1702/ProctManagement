@@ -11,6 +11,7 @@
     <div id="app">
         <form class="product-form" method="POST" action="{{ route('admin.products.store') }}">
             @csrf
+            <input type="hidden" name="redirect_after_save" id="redirect_after_save" value="0">
             <div class="row">
                 <div class="product-form-left-column col-lg-8 col-md-12">
                     @include('product::admin.products.layouts.left_column')
@@ -59,3 +60,17 @@
     });
 </script>
 @endpush
+@push('scripts')
+<script>
+    $(document).ready(function () {
+        $('.save-btn').click(function () {
+            $('#redirect_after_save').val("0");
+        });
+
+        $('.save-exit-btn').click(function () {
+            $('#redirect_after_save').val("1");
+        });
+    });
+</script>
+@endpush
+
