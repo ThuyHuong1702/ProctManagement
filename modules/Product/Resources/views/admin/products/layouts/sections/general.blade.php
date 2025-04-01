@@ -17,7 +17,6 @@
                     id="name"
                     class="form-control"
                     value="{{ old('name', $product->name ?? '') }}"
-                    required
                 >
                 @error('name')
                     <span class="help-block text-red">{{ $message }}</span>
@@ -50,7 +49,7 @@
                 <span class="text-red">*</span>
             </label>
             <div class="col-sm-6">
-                <select name="brand_id" id="brand-id" class="form-control custom-select-black" required>
+                <select name="brand_id" id="brand-id" class="form-control custom-select-black" >
                     <option value="">Please Select</option>
                         @foreach($brands as $brand)
                             <option value="{{ $brand->id }}" {{ old('brand_id', $product->brand_id ?? '') == $brand->id ? 'selected' : '' }}>
@@ -71,7 +70,7 @@
             </label>
 
             <div class="col-sm-6">
-                <select name="categories" id="categories-id" class="form-control custom-select-black" required>
+                <select name="category_id" id="category-id" class="form-control custom-select-black">
                     <option value="">Please Select</option>
                         @foreach($categories as $category)
                             <option value="{{ $category->id }}"
@@ -81,7 +80,7 @@
                         @endforeach
                 </select>
                 </select>
-                @error('categories')
+                @error('category_id')
                     <span class="help-block text-red">{{ $message }}</span>
                 @enderror
             </div>

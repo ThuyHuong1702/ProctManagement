@@ -59,7 +59,7 @@
                 DataTable.setRoutes('#{{ $resource }}-table .table', {
                     table: '{{ "admin.{$resource}.table" }}',
                     edit: '{{ "admin.{$resource}.edit" }}',
-                    destroy: '{{ "admin.{$resource}.destroy" }}',
+                    delete: '{{ "admin.{$resource}.delete" }}',
                 });
             @endisset
         </script>

@@ -15,6 +15,6 @@ Route::get('variations/{id}/edit', [VariationController::class, 'edit'])->name('
 
 Route::put('variations/{id}', [VariationController::class, 'update'])->name('admin.variations.update');
 
-Route::delete('variations/{ids}', [VariationController::class, 'destroy'])->name('admin.variations.destroy');
+Route::delete('variations/{ids}', [VariationController::class, 'delete'])->name('admin.variations.admin.products.delete');
 
 Route::get('variations/index/table', [VariationController::class, 'table'])->name('admin.variations.table');

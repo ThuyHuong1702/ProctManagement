@@ -35,6 +35,10 @@
                     >
 
                     <span class="help-block text-red" v-if="errors.has('sku')" v-text="errors.get('sku')"></span>
+
+                    @error('sku')
+                        <span class="help-block text-red">{{ $message }}</span>
+                    @enderror
                 </div>
             </div>
 
@@ -67,7 +71,6 @@
                 <div class="col-sm-12">
                     <input
                         type="number"
-                        min="0"
                         name="qty"
                         step="1"
                         id="qty"

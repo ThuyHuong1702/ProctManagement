@@ -16,10 +16,12 @@
 
             <div class="col-sm-12">
                 <textarea name="short_description" rows="6" cols="10" id="short-description" class="form-control">
-                    {{ old('short_description ', $product->short_description ?? '') }}
+                    {{ old('short_description', $product->short_description ?? '') }}
                 </textarea>
 
-                <span class="help-block text-red" v-if="errors.has('short_description')" v-text="errors.get('short_description')"></span>
+                @error('short_description')
+                    <span class="help-block text-red">{{ $message }}</span>
+                @enderror
             </div>
         </div>
 
@@ -85,7 +87,9 @@
                     </span>
                 </div>
 
-                <span class="help-block text-red" v-if="errors.has('new_to')" v-text="errors.get('new_to')"></span>
+                @error('new_to')
+                    <span class="help-block text-red">{{ $message }}</span>
+                @enderror
             </div>
         </div>
     </div>

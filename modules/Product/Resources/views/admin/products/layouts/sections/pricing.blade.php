@@ -30,11 +30,12 @@
                             VNĐ
                         </span>
 
-                        <input type="number" min="0" name="price" step="0.1" id="price"
-                            class="form-control" value="{{ old('name', $product->price ?? '') }}" >
+                        <input type="number" name="price" step="0.1" id="price"
+                            class="form-control" value="{{ old('price', $product->price ?? '') }}" >
                     </div>
-
-                    <span class="help-block text-red" v-if="errors.has('price')" v-text="errors.get('price')"></span>
+                    @error('price')
+                    <span class="help-block text-red">{{ $message }}</span>
+                    @enderror
                 </div>
             </div>
 
@@ -49,13 +50,13 @@
                             {{ old('special_price_type', $product->special_price_type ?? '') == 1 ? 'VNĐ' : '%' }}
                         </span>
 
-                        <input type="number" min="0" name="special_price" step="0.1" id="special-price"
+                        <input type="number" name="special_price" step="0.1" id="special-price"
                             class="form-control" value="{{ old('special_price', $product->special_price ?? '') }}">
                     </div>
 
-                    @if ($errors->has('special_price'))
-                        <span class="help-block text-red">{{ $errors->first('special_price') }}</span>
-                    @endif
+                    @error('special_price')
+                        <span class="help-block text-red">{{ $message }}</span>
+                    @enderror
                 </div>
             </div>
 
@@ -75,9 +76,9 @@
                         </option>
                     </select>
 
-                    @if ($errors->has('special_price_type'))
-                        <span class="help-block text-red">{{ $errors->first('special_price_type') }}</span>
-                    @endif
+                    @error('special_price_type')
+                        <span class="help-block text-red">{{ $message }}</span>
+                    @enderror
                 </div>
             </div>
 
@@ -107,6 +108,10 @@
 
                     <span class="help-block text-red" v-if="errors.has('special_price_start')"
                         v-text="errors.get('special_price_start')"></span>
+
+                    @error('special_price_start')
+                        <span class="help-block text-red">{{ $message }}</span>
+                    @enderror
                 </div>
             </div>
 
@@ -136,6 +141,10 @@
 
                     <span class="help-block text-red" v-if="errors.has('special_price_end')"
                         v-text="errors.get('special_price_end')"></span>
+
+                    @error('special_price_end')
+                        <span class="help-block text-red">{{ $message }}</span>
+                    @enderror
                 </div>
             </div>
         </template>

@@ -124,6 +124,10 @@ return [
             'price' => 'Price',
             'special_price' => 'Special Price',
             'special_price_type' => 'Special Price Type',
+            'price_error' => 'Giá không được nhỏ hơn 0.',
+            'price_required' => 'Giá là bắt buộc.',
+            'day_error' => 'Ngày kết thúc phải sau ngày bắt đầu',
+            'qty_error' => 'Số lượng là bắt buộc',
 
             'special_price_types' => [
                 'fixed' => 'Fixed',

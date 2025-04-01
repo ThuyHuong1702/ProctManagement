@@ -219,6 +219,13 @@
                                                                 >
                                                             </div>
 
+                                                            <span class="help-block text-red" v-if="variant.price < 0">
+                                                                {{ trans('product::products.form.variants.price_error') }}
+                                                            </span>
+                                                            <span class="help-block text-red" v-else-if="!variant.price && variant.price !== 0">
+                                                                {{ trans('product::products.form.variants.price_required') }}
+                                                            </span>
+
                                                             <span
                                                                 class="help-block text-red"
                                                                 v-if="errors.has(`variants.${variant.uid}.price`)"
@@ -252,6 +259,9 @@
                                                                     v-model="variant.special_price"
                                                                 >
                                                             </div>
+                                                            <span class="help-block text-red" v-if="variant.special_price < 0">
+                                                                {{ trans('product::products.form.variants.price_error') }}
+                                                            </span>
 
                                                             <span
                                                                 class="help-block text-red"
@@ -352,6 +362,7 @@
                                                                 >
                                                                 </flat-pickr>
 
+
                                                                 <span
                                                                     class="input-group-addon cursor-pointer"
                                                                     v-if="variant.special_price_end"
@@ -359,13 +370,11 @@
                                                                 >
                                                                     <i class="fa fa-times" aria-hidden="true"></i>
                                                                 </span>
+
                                                             </div>
 
-                                                            <span
-                                                                class="help-block text-red"
-                                                                v-if="errors.has(`variants.${variant.uid}.special_price_end`)"
-                                                                v-text="errors.get(`variants.${variant.uid}.special_price_end`)"
-                                                            >
+                                                            <span class="help-block text-red" v-if="new Date(variant.special_price_end) < new Date(variant.special_price_start)">
+                                                                {{ trans('product::products.form.variants.day_error') }}
                                                             </span>
                                                         </div>
                                                     </div>
@@ -423,11 +432,9 @@
                                                                 v-model.number="variant.qty"
                                                             >
 
-                                                            <span
-                                                                class="help-block text-red"
-                                                                v-if="errors.has(`variants.${variant.uid}.qty`)"
-                                                                v-text="errors.get(`variants.${variant.uid}.qty`)"
-                                                            >
+
+                                                            <span class="help-block text-red" v-if="!variant.qty && variant.manage_stock == 1">
+                                                                {{ trans('product::products.form.variants.qty_error') }}
                                                             </span>
                                                         </div>
                                                     </div>

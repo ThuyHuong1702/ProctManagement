@@ -3,7 +3,7 @@
         <div class="row dt-layout-row">
             <div class="dt-layout-cell dt-layout-start col-sm-6">
                 <div class="dt-length">
-                    <button type="button" class="btn btn-default btn-delete">
+                    <button type="button" class="btn btn-default btn-delete" id="delete-records">
                         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="16" viewBox="0 0 14 16" fill="none">
                             <path
                                 d="M12 3.6665L11.5868 10.3499C11.4813 12.0575 11.4285 12.9113 11.0005 13.5251C10.7889 13.8286 10.5164 14.0847 10.2005 14.2772C9.56141 14.6665 8.70599 14.6665 6.99516 14.6665C5.28208 14.6665 4.42554 14.6665 3.78604 14.2765C3.46987 14.0836 3.19733 13.827 2.98579 13.5231C2.55792 12.9082 2.5063 12.0532 2.40307 10.3433L2 3.6665"

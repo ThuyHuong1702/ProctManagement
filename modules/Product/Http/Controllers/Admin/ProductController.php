@@ -15,6 +15,8 @@ use App\Models\Brand;
 use App\Models\Category;
 use App\Models\ProductVariant;
 
+use Illuminate\Support\Facades\DB;
+
 use Modules\Product\Services\ProductService;
 
 use App\Http\Requests\ProductRequest;
@@ -115,7 +117,8 @@ class ProductController
      */
     public function store(ProductRequest $request)
 {
-    //dd($request->all());
+    $request->validated();
+    //dd($validatedData);
     // Xác thực dữ liệu đầu vào
     // $validated = $request->validate([
     //     'name' => 'required|string|max:191',
@@ -298,34 +301,31 @@ class ProductController
 
     return redirect()->route('admin.products.index')->with('success', 'Sản phẩm đã được cập nhật!');
 }
-
-
 public function delete(Request $request)
-{
-    try {
-        $ids = $request->input('ids');
+    {
+        $ids = explode(',', $request->ids);
 
-        if (empty($ids)) {
-            return response()->json(['error' => true, 'message' => 'No IDs provided'], 400);
+        try {
+            DB::beginTransaction();
+
+            Product::whereIn('id', $ids)->delete();
+
+            DB::commit();
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Sản phẩm đã được xóa thành công.'
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Có lỗi xảy ra khi xóa sản phẩm!',
+                'error' => $e->getMessage()
+            ], 500);
         }
-
-        // Kiểm tra nếu tất cả các ID có tồn tại trong cơ sở dữ liệu
-        $ProductIds = Product::whereIn('id', $ids)->pluck('id');
-        if (count($ProductIds) !== count($ids)) {
-            return response()->json(['error' => true, 'message' => 'Some IDs are invalid'], 400);
-        }
-
-        // Tiến hành xóa
-        Product::destroy($ids);
-        return response()->json(['message' => __('Thành công')]);
-    } catch (\Exception $ex) {
-        report($ex);
-        return response()->json([
-            'error' => true,
-            'message' => __('Admin::business-office.delete.failure')
-        ]);
     }
-}
+
     public function search(Request $request)
     {
         $keyword = $request->input('keyword');
