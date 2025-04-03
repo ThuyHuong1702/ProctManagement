@@ -74,6 +74,7 @@ export default {
 
             values.push({
                 uid,
+                color: "",// Thêm color vào dòng mới
                 image: {
                     id: null,
                     path: null,

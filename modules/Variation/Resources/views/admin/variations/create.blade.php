@@ -13,10 +13,12 @@
             <div id="app">
                 <form
                     class="form"
+                    method="POST"
+                    action="{{ route('admin.variations.store') }}"
                     @input="errors.clear($event.target.name)"
-                    @submit.prevent
                     ref="form"
                 >
+                    @csrf
                     @include('variation::admin.variations.partials.general')
                     @include('variation::admin.variations.partials.values')
                     @include('variation::admin.variations.partials.submit')

@@ -1,6 +1,7 @@
 import Vue from "vue";
 import VariationMixin from "./mixins/VariationMixin";
 import { toaster } from "@admin/js/Toaster";
+import route from 'ziggy-js';
 
 new Vue({
     el: "#app",
@@ -23,10 +24,9 @@ new Vue({
                 values: [
                     {
                         uid: this.uid(),
-                        image: {
-                            id: null,
-                            path: null,
-                        },
+                        label: "",  // Chỉ có label khi type là 'text'
+                        color: "",  // Chỉ có color khi type là 'color'
+                        image: "",  // Chỉ có image khi type là 'image'
                     },
                 ],
             };
@@ -38,35 +38,57 @@ new Vue({
             });
         },
 
-        submit() {
+        // Phương thức gửi dữ liệu
+        async submit() {
             this.formSubmitting = true;
+        
+            // Xử lý `values` tùy theo `type`
+            this.form.values = this.form.values.map(value => {
+                if (this.form.type === 'text') {
+                    return { label: value.label || "", value: "" };  // Chỉ gửi label khi type là 'text'
+                } else if (this.form.type === 'color') {
+                    return { color: value.color || "", label: "" };  // Chỉ gửi color khi type là 'color'
+                } else if (this.form.type === 'image') {
+                    return { image: value.image || "", label: "", color: "" };  // Chỉ gửi image khi type là 'image'
+                }
+                return value;
+            });
+        
+            try {
+                const formData = this.transformData(this.form);
 
-            $.ajax({
-                type: "POST",
-                url: route("admin.variations.store"),
-                data: this.transformData(this.form),
-                dataType: "json",
-                success: (response) => {
-                    toaster(response.message, {
-                        type: "success",
-                    });
+                // Đảm bảo `values` là mảng
+                formData.values = Object.values(formData.values);
 
+                const response = await fetch(route("admin.variations.store"), {
+                    method: "POST",
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData),
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    toaster(data.message, { type: "success" });
                     this.resetForm();
                     this.errors.reset();
-                },
-            })
-                .catch((error) => {
-                    toaster(error.responseJSON.message, {
-                        type: "default",
-                    });
-
+                } else {
+                    toaster(data.message, { type: "default" });
                     this.errors.reset();
+                }
+            } catch (error) {
+                toaster(error.message, { type: "default" });
+                this.errors.reset();
+                if (error.responseJSON && error.responseJSON.errors) {
                     this.errors.record(error.responseJSON.errors);
                     this.focusFirstErrorField(this.$refs.form.elements);
-                })
-                .always(() => {
-                    this.formSubmitting = false;
-                });
-        },
+                }
+            } finally {
+                this.formSubmitting = false;
+            }
+        }
     },
 });

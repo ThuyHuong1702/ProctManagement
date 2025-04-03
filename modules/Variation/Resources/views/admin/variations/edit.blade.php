@@ -31,7 +31,7 @@
 
 @push('globals')
     <script type="module">
-        Ecommerce.data['variation'] = {!! $variation_resource !!};
+        Ecommerce.data['variation'] = {!! $variation !!};
     </script>
 
     @vite([
