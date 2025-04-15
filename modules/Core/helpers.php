@@ -144,16 +144,49 @@ if (!function_exists('activeMenu')) {
         $segment3 = Request::segment(3);
 
         $class = ['main' => null, 'sub' => null];
+
         if ($segment2 == $url) {
             $class['main'] = 'active';
-            if ($segment2 == 'setting' && $segment3 == $subUrl) {
+
+            // Nếu subUrl là null, đánh dấu active nếu không phải là "create"
+            if ($subUrl === null) {
+                if ($segment3 === null || $segment3 == 'edit' || is_numeric($segment3)) {
+                    $class['sub'] = 'active';
+                }
+            }
+
+            // Nếu subUrl khớp segment3
+            if ($segment3 == $subUrl) {
                 $class['sub'] = 'active';
             }
-            if ($segment3 == $subUrl) {
+
+            // Trường hợp đặc biệt cho setting
+            if ($segment2 == 'setting' && $segment3 == $subUrl) {
                 $class['sub'] = 'active';
             }
         }
 
         return $class;
+    }
+}
+
+if (! function_exists('format_price')) {
+    /**
+     * Format price to remove unnecessary zeros after decimal point.
+     *
+     * @param  float|string $price
+     * @return string
+     */
+    function format_price($price)
+    {
+        // Convert price to float to handle decimal points correctly
+        $price = (float)$price;
+
+        // Remove trailing zeros after decimal point
+        if (strpos($price, '.') !== false) {
+            $price = rtrim(rtrim(number_format($price, 8, '.', ''), '0'), '.');
+        }
+
+        return $price;
     }
 }

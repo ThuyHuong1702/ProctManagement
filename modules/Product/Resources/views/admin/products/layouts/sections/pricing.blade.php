@@ -29,9 +29,9 @@
                         <span class="input-group-addon">
                             VNĐ
                         </span>
+                        <input type="number" name="price" id="price" step="any" class="form-control"
+                        value="{{ old('price', $product->price ?? '') !== '' ? format_price(old('price', $product->price ?? '')) : '' }}">
 
-                        <input type="number" name="price" step="0.1" id="price"
-                            class="form-control" value="{{ old('price', $product->price ?? '') }}" >
                     </div>
                     @error('price')
                     <span class="help-block text-red">{{ $message }}</span>
