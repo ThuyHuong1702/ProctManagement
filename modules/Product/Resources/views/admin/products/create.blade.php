@@ -9,7 +9,7 @@
 
 @section('content')
     <div id="app">
-        <form class="product-form" method="POST" action="{{ route('admin.products.store') }}">
+        <form class="product-form" method="POST" action="{{ route('admin.products.store') }}" enctype="multipart/form-data">
             @csrf
             <input type="hidden" name="redirect_after_save" id="redirect_after_save" value="0">
             <div class="row">

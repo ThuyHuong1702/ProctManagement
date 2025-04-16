@@ -23,6 +23,7 @@ class ProductService
 {
     $isActive = isset($data['is_active']) && $data['is_active'] === 'on' ? 1 : 0;
     $product = [
+        'thumbnail' => $data['thumbnail'] ?? null,
         'name' => $data['name'] ?? null,
         'description' => $data['description'] ?? null,
         'brand_id' => $data['brand_id'],
@@ -32,7 +33,7 @@ class ProductService
         'new_to' => $data['new_to'] ?? null,
         'price' => $data['price'] ?? 0,
         'special_price' => $data['special_price'] ?? null,
-        'special_price_type' => isset($data["special_price_type"]) ? intval($data["special_price_type"]) : 1,
+        'special_price_type' => isset($data["special_price_type"]) ? (intval($data["special_price_type"]) == 1 ? 1 : 2) : 1,
         'special_price_start' => $data['special_price_start'] ?? null,
         'special_price_end' => $data['special_price_end'] ?? null,
         'selling_price' => $data['selling_price'] ?? null,
@@ -92,7 +93,9 @@ class ProductService
             'sku' => $data["variants_{$variantId}_sku"] ?? null,
             'price' => $data["variants_{$variantId}_price"] ?? null,
             'special_price' => $data["variants_{$variantId}_special_price"] ?? null,
-            'special_price_type' => isset($data["special_{$variantId}_type"]) && $data["special_{$variantId}_type"] == 2 ? 2 : 1,
+            'special_price_type' => isset($data["variants_{$variantId}_special_price_type"])
+            ? ($data["variants_{$variantId}_special_price_type"] === 'percent' ? 2 : 1)
+            : 1,
             'special_price_start' => $data["variants_{$variantId}_special_price_start"] ?? null,
             'special_price_end' => $data["variants_{$variantId}_special_price_end"] ?? null,
             'manage_stock' => $data["variants_{$variantId}_manage_stock"] ?? 0,

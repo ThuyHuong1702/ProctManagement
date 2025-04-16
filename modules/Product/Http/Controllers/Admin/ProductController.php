@@ -14,6 +14,7 @@ use App\Models\Product;
 use App\Models\Brand;
 use App\Models\Category;
 use App\Models\ProductVariant;
+use Illuminate\Support\Facades\Storage;
 
 use Illuminate\Support\Facades\DB;
 
@@ -86,7 +87,7 @@ class ProductController
             $sortOrder = 'asc';
         }
 
-        $perPage = $request->input('per_page', 2);
+        $perPage = $request->input('per_page', 10);
         $totalProducts = Product::count(); // Tổng số sản phẩm
 
 
@@ -118,10 +119,15 @@ class ProductController
     public function store(ProductRequest $request)
 {
     $request->validated();
-    //dd($validatedData);
-    // Gọi ProductService để format dữ liệu
+    //dd($request);
+    //chạy lệnh php artisan storage:link
     $structuredData = ProductService::formatProductVariantsForUpdate($request->all());
-
+    // Lưu ảnh thumbnail nếu có
+    if ($request->hasFile('thumbnail')) {
+        $file = $request->file('thumbnail');
+        $path = $file->store('products', 'public');
+        $structuredData['thumbnail'] = Storage::url($path);
+    }
     //dd($structuredData);
     // Nếu có biến thể, lưu vào bảng `product_variants`
     if (!empty($structuredData['variants'])) {
@@ -129,13 +135,16 @@ class ProductController
         $defaultVariant = collect($structuredData['variants'])->firstWhere('is_default', 1);
         $parentPrice = $defaultVariant['price'] ?? 0;
         $parentSpecialPrice = $defaultVariant['special_price'] ?? 0;
-        $parentPriceType = isset($defaultVariant['special_price_type']) ? ($defaultVariant['special_price_type'] == 1 ? 1 : 2) : 1;
+        $parentPriceType = isset($defaultVariant['special_price_type'])
+        ? ($defaultVariant['special_price_type'] == 2 ? 2 : 1)
+        : 1;
         $parentSpecialPriceStart = $defaultVariant['special_price_start'] ?? null;
         $parentSpecialPriceEnd = $defaultVariant['special_price_end'] ?? null;
         $parentSku = $defaultVariant['sku'] ?? null;
 
         // Lưu sản phẩm cha (parent product)
         $product = Product::create([
+            'thumbnail' => $structuredData['thumbnail'] ?? null,
             'name' => $structuredData['name'] ?? $request->name,
             'brand_id' => $structuredData['brand_id'],
             'sku' => $parentSku, // Lấy sku của biến thể mặc định nếu có
@@ -168,6 +177,7 @@ class ProductController
     } else {
         // Nếu không có biến thể, lưu vào `products`
         $product = Product::create([
+            'thumbnail' => $structuredData['thumbnail'] ?? null,
             'name' => $structuredData['name'] ?? $request->name,
             'description' => $structuredData['description'] ?? null,
             'brand_id' => $structuredData['brand_id'],
@@ -220,9 +230,16 @@ class ProductController
      */
    public function update(Request $request, $id)
 {
+    //dd($request->all());
     //$validatedData = $request->validated();
     $structuredData = ProductService::formatProductVariantsForUpdate($request->all());
-
+    // Lưu ảnh thumbnail nếu có
+    if ($request->hasFile('thumbnail')) {
+        $file = $request->file('thumbnail');
+        $path = $file->store('products', 'public');
+        $structuredData['thumbnail'] = Storage::url($path);
+    }
+    //dd($structuredData);
     $product = Product::findOrFail($id);
 
     if (!empty($structuredData['variants'])) {
@@ -234,6 +251,7 @@ class ProductController
         $parentSpecialPriceStart = $defaultVariant['special_price_start'] ?? null;
         $parentSpecialPriceEnd = $defaultVariant['special_price_end'] ?? null;
         $product->update([
+            'thumbnail' => $structuredData['thumbnail'] ?? $request->thumbnail,
             'name' => $structuredData['name'] ?? $request->name,
             'brand_id' => $structuredData['brand_id'],
             'sku' => null,
@@ -272,6 +290,7 @@ class ProductController
 
         // Cập nhật sản phẩm chính
         $product->update([
+            'thumbnail' => $structuredData['thumbnail'] ?? null,
             'name' => $structuredData['name'],
             'description' => $structuredData['description'] ?? null,
             'brand_id' => $structuredData['brand_id'],

@@ -28,8 +28,7 @@
             <td class="dt-type-numeric">{{ $product->id }}</td>
             <td>
                 <div class="thumbnail-holder">
-                    <img src="https://demo.fleetcart.envaysoft.com/storage/media/YXFIHEgHF4JOGhBdtehoqGzES93CfS2gaxRpIt1U.jpeg"
-                        alt="thumbnail">
+                    <img src="{{ $product->thumbnail }}" alt="Product Image">
                 </div>
             </td>
             <td>
