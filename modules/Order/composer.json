@@ -1,0 +1,34 @@
+{
+    "name": "ecommerce/order",
+    "description": "",
+    "authors": [
+        {
+            "name": "Envay Soft",
+            "email": "envaysoft@gmail.com"
+        }
+    ],
+    "require": {
+        "php": "^8.1.0"
+    },
+    "extra": {
+        "laravel": {
+            "providers": [],
+            "aliases": {
+
+            }
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "Modules\\Order\\": "",
+            "Modules\\Order\\App\\": "app/",
+            "Modules\\Order\\Database\\Factories\\": "database/factories/",
+            "Modules\\Order\\Database\\Seeders\\": "database/seeders/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Modules\\Order\\Tests\\": "tests/"
+        }
+    }
+}

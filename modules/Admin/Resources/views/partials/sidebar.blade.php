@@ -77,6 +77,23 @@
                     </li>
                 </ul>
             </li>
+            <li class="treeview {{ activeMenu('sales')['main'] }}">
+                <a href="{{ route('admin.orders.index') }}" class="">
+                    <i class="fa fa-users"></i>
+                    <span>Sales</span>
+                    <span class="pull-right-container">
+                        <i class="fa fa-angle-left pull-right"></i>
+                    </span>
+                </a>
+                <ul class="treeview-menu">
+                    <li class="{{ activeMenu('orders')['sub'] }}">
+                        <a href="{{ route('admin.orders.index') }}" class="">
+                            <i class="fa fa-angle-double-right"></i>
+                            <span>Orders</span>
+                        </a>
+                    </li>
+                </ul>
+            </li>
         </ul>
     </section>
 </aside>
